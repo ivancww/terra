@@ -3,12 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terra資源系統 v1.0.0</title>
+    <title>Terra資源系統 v1.4.0</title>
     
-    <!-- PWA 核心設定 (Android 主要讀取呢個) -->
     <link rel="manifest" href="./manifest.json">
-
-    <!-- 針對 Apple iOS / iPadOS 的專屬設定 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Terra資源">
@@ -17,81 +14,124 @@
 
     <style>
         body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f7f6; }
-        
-        /* 頂部 Header 設計 (加入 Logo 及 版本號排版) */
         .header { background-color: #007bff; color: white; padding: 15px; position: relative; display: flex; justify-content: center; align-items: center; }
         .header-content { display: flex; align-items: center; font-size: 20px; font-weight: bold; }
-        .header-logo { width: 28px; height: 28px; margin-right: 10px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        .version-tag { font-size: 12px; font-weight: normal; opacity: 0.9; position: absolute; right: 15px; background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px; }
+        .header-logo { width: 28px; height: 28px; margin-right: 10px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer; }
+        .version-tag { font-size: 12px; font-weight: normal; opacity: 0.9; position: absolute; right: 15px; top: 15px; background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px; }
         
-        .nav-tabs { display: flex; flex-wrap: wrap; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .tab { flex: 1; min-width: 100px; text-align: center; padding: 12px; cursor: pointer; color: #555; font-weight: bold; border-bottom: 3px solid transparent; }
+        /* 通知按鈕設計 */
+        .noti-btn { font-size: 12px; position: absolute; left: 15px; top: 15px; background: #ffc107; color: #333; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-weight: bold; border: none; }
+        
+        .nav-tabs { display: flex; flex-wrap: wrap; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 15px; }
+        .tab { flex: 1; min-width: 70px; text-align: center; padding: 12px 5px; cursor: pointer; color: #555; font-size: 14px; font-weight: bold; border-bottom: 3px solid transparent; }
         .tab.active { color: #007bff; border-bottom: 3px solid #007bff; }
-        .content-area { padding: 0 20px; }
+        
+        .content-area { padding: 0 15px; padding-bottom: 40px; }
+        .filter-section { display: flex; gap: 10px; margin-bottom: 15px; }
+        .filter-section select { flex: 1; padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 14px; background-color: white; }
         
         .doc-card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
-        .doc-info h4 { margin: 0 0 5px 0; color: #333; }
-        .doc-info span { font-size: 12px; color: #888; background: #eee; padding: 3px 8px; border-radius: 10px; margin-right: 5px; }
-        .open-btn { background: #007bff; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; text-decoration: none; font-size: 14px; font-weight: bold; }
-        .open-btn:hover { background: #0056b3; }
+        .doc-info h4 { margin: 0 0 8px 0; color: #333; font-size: 16px; display: flex; align-items: center; flex-wrap: wrap; gap: 5px; }
+        .doc-info span.tag { font-size: 12px; color: #666; background: #eef2f5; padding: 4px 8px; border-radius: 12px; margin-right: 6px; display: inline-block; }
+        .new-badge { color: #dc3545; font-size: 12px; font-weight: bold; background: #ffeeba; padding: 2px 6px; border-radius: 4px; animation: pulse 2s infinite; }
         
-        /* 銷售工具專屬按鈕風格 */
-        .static-tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .tool-btn { background: linear-gradient(135deg, #007bff, #00d2ff); color: white; text-align: center; padding: 20px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 16px; box-shadow: 0 4px 10px rgba(0,123,255,0.3); }
+        .open-btn { background: #007bff; color: white; border: none; padding: 8px 18px; border-radius: 5px; cursor: pointer; text-decoration: none; font-size: 14px; font-weight: bold; white-space: nowrap; }
+        
+        .static-tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        .tool-btn { background: linear-gradient(135deg, #007bff, #00d2ff); color: white; text-align: center; padding: 20px 10px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 15px; box-shadow: 0 4px 10px rgba(0,123,255,0.3); }
+
+        .admin-panel { background: #fff; border: 2px dashed #007bff; padding: 20px; border-radius: 8px; margin-top: 30px; display: none; }
+        .admin-group { margin-bottom: 12px; }
+        .admin-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #333; }
+        .admin-group input, .admin-group select { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        .admin-btn { width: 100%; padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold; }
+        .admin-btn:disabled { background-color: #ccc; }
+
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
 
 <div class="header">
+    <button class="noti-btn" id="enableNotiBtn">🔔 開啟通知</button>
     <div class="header-content">
-        <!-- 引入你的 Terra Logo -->
-        <img src="./terra-192.png" alt="Terra Logo" class="header-logo">
+        <img src="./terra-192.png" alt="Terra Logo" class="header-logo" onclick="triggerSecretEntrance()">
         Terra資源系統
     </div>
-    <span class="version-tag">v1.0.0</span>
+    <span class="version-tag">v1.4.0</span>
 </div>
 
 <div class="nav-tabs">
     <div class="tab active" onclick="switchTab('Memo')">Memo</div>
+    <div class="tab" onclick="switchTab('同事分享')">分享</div>
     <div class="tab" onclick="switchTab('新聞')">新聞</div>
-    <div class="tab" onclick="switchTab('銷售工具')">銷售工具</div>
+    <div class="tab" onclick="switchTab('團隊培訓及會議記錄')">培訓及會議</div>
+    <div class="tab" onclick="switchTab('銷售工具')">工具</div>
 </div>
 
 <div class="content-area" id="mainContent">
-    <!-- 銷售工具專屬連結 (預設隱藏，點擊 Tab 後顯示) -->
+    <div class="filter-section" id="filterArea">
+        <select id="monthFilter" onchange="renderList()"><option value="">所有月份搜尋</option></select>
+        <select id="subCatFilter" onchange="renderList()" style="display: none;">
+            <option value="">所有副分類</option>
+            <option value="推廣優惠">推廣優惠</option>
+            <option value="公司獎賞">公司獎賞</option>
+            <option value="公司會議">公司會議</option>
+            <option value="產品更新資料">產品更新資料</option>
+        </select>
+    </div>
+
     <div id="staticTools" style="display: none;">
         <div class="static-tools-grid">
             <a href="https://ivancww.github.io/avawealth" target="_blank" class="tool-btn">財富傳承系統</a>
             <a href="https://ivancww.github.io/CIApp" target="_blank" class="tool-btn">危疾計數機</a>
             <a href="https://ivancww.github.io/medicalclaims" target="_blank" class="tool-btn">醫療理賠指引</a>
-            <a href="https://ivancww.github.io/bodycheck" target="_blank" class="tool-btn">客戶體檢優惠</a>
         </div>
         <hr style="border:0; height:1px; background:#ddd; margin: 20px 0;">
     </div>
     
-    <!-- Firebase 動態資料列表 -->
     <div id="dynamicList">資料載入中...</div>
+
+    <div class="admin-panel" id="secretAdminPanel">
+        <h3 style="color: #28a745; margin-top:0; text-align:center;">🔒 管理員發佈系統</h3>
+        <div class="admin-group"><label>文件/新聞標題</label><input type="text" id="adminTitle"></div>
+        <div class="admin-group"><label>主分類板塊</label>
+            <select id="adminMainSection" onchange="toggleAdminSubCat()">
+                <option value="Memo">Memo</option><option value="同事分享">同事分享</option>
+                <option value="新聞">新聞</option><option value="團隊培訓及會議記錄">團隊培訓及會議記錄</option>
+                <option value="銷售工具">銷售工具</option>
+            </select>
+        </div>
+        <div class="admin-group" id="adminSubCatGroup"><label>Memo 副分類</label>
+            <select id="adminSubCategory">
+                <option value="推廣優惠">推廣優惠</option><option value="公司獎賞">公司獎賞</option>
+                <option value="公司會議">公司會議</option><option value="產品更新資料">產品更新資料</option>
+            </select>
+        </div>
+        <div class="admin-group"><label>外部連結 (無檔案時填寫)</label><input type="url" id="adminExternalLink"></div>
+        <div class="admin-group"><label>上載檔案 (PDF / 圖片)</label><input type="file" id="adminFileUpload"></div>
+        <button class="admin-btn" id="adminSubmitBtn">發佈並推送通知全團隊</button>
+        <div id="adminLoading" style="text-align:center; color:#ff9900; font-weight:bold; margin-top:10px; display:none;">發佈中...</div>
+    </div>
 </div>
 
-<!-- 註冊 Service Worker (啟用 PWA 強制更新) -->
 <script>
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js').then(reg => {
-            reg.addEventListener('updatefound', () => {
-                const newWorker = reg.installing;
-                newWorker.addEventListener('statechange', () => {
-                    if (newWorker.state === 'activated') {
-                        window.location.reload();
-                    }
-                });
-            });
-        });
+    function triggerSecretEntrance() {
+        if (prompt("🔑 密碼：") === "Terra2026") {
+            document.getElementById('secretAdminPanel').style.display = 'block';
+            window.scrollTo({ left: 0, top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+    }
+    function toggleAdminSubCat() {
+        document.getElementById('adminSubCatGroup').style.display = (document.getElementById('adminMainSection').value === 'Memo') ? 'block' : 'none';
     }
 </script>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-    import { getFirestore, collection, query, orderBy, onSnapshot, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getFirestore, collection, query, orderBy, onSnapshot, addDoc, enableIndexedDbPersistence, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
+    import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-messaging.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCUUqWRecCdnKB7ReNLuSoiDZEs7q9oSJ4",
@@ -104,56 +144,131 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const storage = getStorage(app);
+    const messaging = getMessaging(app);
 
-    // 啟動 Firestore 離線模式
-    enableIndexedDbPersistence(db).catch(err => console.log("離線模式狀態: ", err.code));
+    enableIndexedDbPersistence(db).catch(() => {});
+
+    // 通知權限按鈕邏輯
+    document.getElementById('enableNotiBtn').addEventListener('click', async () => {
+        try {
+            const permission = await Notification.requestPermission();
+            if (permission === 'granted') {
+                const token = await getToken(messaging, { vapidKey: 'BFXLE7KoKWIL459hYUUnQ7lqBu61pZjR780tWI2uEpICiv6Jg-rIokD8qt0tHzXYILgOGyc5J1BEmT_OpGjsgYg' });
+                if (token) {
+                    await setDoc(doc(db, 'fcm_tokens', token), { token: token, createdAt: new Date() });
+                    alert("✅ 成功開啟通知！");
+                    document.getElementById('enableNotiBtn').style.display = 'none';
+                }
+            } else { alert("你拒絕咗通知權限。"); }
+        } catch (error) { alert("開啟失敗。請確保已將 App 加入主畫面。"); }
+    });
+
+    onMessage(messaging, (payload) => {
+        alert(`🔔 收到新通知: ${payload.notification.title}\n${payload.notification.body}`);
+    });
+
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').then(reg => {
+            reg.addEventListener('updatefound', () => {
+                const newWorker = reg.installing;
+                newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'activated') window.location.reload();
+                });
+            });
+        });
+    }
 
     let allDocs = [];
     let currentTab = 'Memo';
 
-    // 實時監聽 Firestore 資料
-    const q = query(collection(db, "team_documents"), orderBy("createdAt", "desc"));
-    onSnapshot(q, (snapshot) => {
+    onSnapshot(query(collection(db, "team_documents"), orderBy("createdAt", "desc")), (snapshot) => {
         allDocs = snapshot.docs.map(doc => doc.data());
-        renderList();
+        updateMonthFilter(); renderList();
     });
+
+    function updateMonthFilter() {
+        const select = document.getElementById('monthFilter');
+        const curr = select.value;
+        const unique = [...new Set(allDocs.map(d => d.uploadMonth).filter(m => m))].sort().reverse();
+        select.innerHTML = '<option value="">所有月份搜尋</option>' + unique.map(m => `<option value="${m}">${m}</option>`).join('');
+        select.value = curr;
+    }
 
     window.switchTab = function(tabName) {
         currentTab = tabName;
         document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
         event.target.classList.add('active');
-        
         document.getElementById('staticTools').style.display = (tabName === '銷售工具') ? 'block' : 'none';
+        document.getElementById('subCatFilter').style.display = (tabName === 'Memo') ? 'block' : 'none';
+        document.getElementById('filterArea').style.display = (tabName === '銷售工具') ? 'none' : 'flex';
+        document.getElementById('monthFilter').value = ""; document.getElementById('subCatFilter').value = "";
         renderList();
     };
 
-    function renderList() {
+    window.renderList = function() {
         const listDiv = document.getElementById('dynamicList');
+        const mFilter = document.getElementById('monthFilter').value;
+        const sFilter = document.getElementById('subCatFilter').value;
         listDiv.innerHTML = '';
         
-        const filteredDocs = allDocs.filter(doc => doc.mainSection === currentTab);
+        let docs = allDocs.filter(d => d.mainSection === currentTab);
+        if (mFilter) docs = docs.filter(d => d.uploadMonth === mFilter);
+        if (currentTab === 'Memo' && sFilter) docs = docs.filter(d => d.subCategory === sFilter);
         
-        if(filteredDocs.length === 0) {
-            listDiv.innerHTML = '<p style="text-align:center; color:#888;">此分類暫無資料</p>';
-            return;
-        }
+        if(!docs.length) return listDiv.innerHTML = '<p style="text-align:center; color:#888;">暫無資料</p>';
 
-        filteredDocs.forEach(data => {
-            const targetUrl = (data.externalLink && data.externalLink !== "") ? data.externalLink : data.fileUrl;
-            const subTag = data.subCategory ? `<span>${data.subCategory}</span>` : '';
-            const monthTag = data.uploadMonth ? `<span>${data.uploadMonth}</span>` : '';
+        const now = new Date();
+        docs.forEach(data => {
+            const url = (data.externalLink) ? data.externalLink : data.fileUrl;
+            const sub = data.subCategory ? `<span class="tag">${data.subCategory}</span>` : '';
+            const mth = data.uploadMonth ? `<span class="tag">${data.uploadMonth}</span>` : '';
+            let isNew = data.createdAt && (now - data.createdAt.toDate()) / 86400000 <= 7;
+            const badge = isNew ? `<span class="new-badge">❗新更新</span>` : '';
 
             listDiv.innerHTML += `
                 <div class="doc-card">
-                    <div class="doc-info">
-                        <h4>${data.title}</h4>
-                        ${monthTag} ${subTag}
-                    </div>
-                    <a href="${targetUrl}" target="_blank" class="open-btn">開啟</a>
-                </div>
-            `;
+                    <div class="doc-info"><h4>${data.title} ${badge}</h4><div>${mth} ${sub}</div></div>
+                    <a href="${url}" target="_blank" class="open-btn">開啟</a>
+                </div>`;
         });
     }
+
+    document.getElementById('adminSubmitBtn').addEventListener('click', async () => {
+        const title = document.getElementById('adminTitle').value.trim();
+        const mainSection = document.getElementById('adminMainSection').value;
+        const subCategory = mainSection === 'Memo' ? document.getElementById('adminSubCategory').value : "";
+        const externalLink = document.getElementById('adminExternalLink').value.trim();
+        const file = document.getElementById('adminFileUpload').files[0];
+        
+        if(!title || (!file && !externalLink)) return alert('請填寫標題及選擇檔案！');
+
+        document.getElementById('adminSubmitBtn').disabled = true;
+        document.getElementById('adminLoading').style.display = 'block';
+
+        try {
+            let downloadURL = "";
+            if (file) {
+                const storageRef = ref(storage, 'team_files/' + Date.now() + "_" + file.name);
+                await uploadBytes(storageRef, file);
+                downloadURL = await getDownloadURL(storageRef);
+            }
+
+            const today = new Date();
+            await addDoc(collection(db, "team_documents"), {
+                title, mainSection, subCategory, fileUrl: downloadURL, externalLink,
+                uploadMonth: today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, '0'),
+                createdAt: today
+            });
+
+            alert('🎉 發佈成功！(注意：通知功能需配合 Cloud Functions 後端發送)');
+            location.reload();
+        } catch (error) {
+            alert('發佈失敗，請檢查網絡。');
+            document.getElementById('adminSubmitBtn').disabled = false;
+            document.getElementById('adminLoading').style.display = 'none';
+        }
+    });
 </script>
 </body>
 </html>
