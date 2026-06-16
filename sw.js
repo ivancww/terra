@@ -1,48 +1,61 @@
-// 每次修改前台代碼，請更改此版本號強制全體更新
-const CACHE_VERSION = 'v1.0.0'; 
+const CACHE_VERSION = 'v1.4.0'; 
 const CACHE_NAME = `pwa-cache-${CACHE_VERSION}`;
 
-// 需要離線緩存的核心檔案
 const urlsToCache = [
     './',
     './index.html',
-    './admin.html',
-    './manifest.json'
+    './manifest.json',
+    './terra-192.png',
+    './terra-512.png'
 ];
 
-// 1. 安裝時下載緩存，並強制立即生效 (skipWaiting)
-self.addEventListener('install', event => {
-    self.skipWaiting(); 
-    event.waitUntil(
-        caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
-    );
+// 引入 Firebase 背景通訊模組
+importScripts('https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/10.8.1/firebase-messaging-compat.js');
+
+// 初始化 Firebase
+firebase.initializeApp({
+    apiKey: "AIzaSyCUUqWRecCdnKB7ReNLuSoiDZEs7q9oSJ4",
+    authDomain: "terra-team.firebaseapp.com",
+    projectId: "terra-team",
+    storageBucket: "terra-team.firebasestorage.app",
+    messagingSenderId: "781876962987",
+    appId: "1:781876962987:web:33c1f7ae868fc3454779ee"
 });
 
-// 2. 啟動時清除舊版本緩存 (強制更新核心機制)
+const messaging = firebase.messaging();
+
+// 監聽背景通知
+messaging.onBackgroundMessage((payload) => {
+    const notificationTitle = payload.notification.title;
+    const notificationOptions = {
+        body: payload.notification.body,
+        icon: './terra-192.png',
+        badge: './terra-192.png'
+    };
+    self.registration.showNotification(notificationTitle, notificationOptions);
+});
+
+self.addEventListener('install', event => {
+    self.skipWaiting(); 
+    event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache)));
+});
+
 self.addEventListener('activate', event => {
     event.waitUntil(
         caches.keys().then(cacheNames => {
             return Promise.all(
                 cacheNames.map(cache => {
-                    if (cache !== CACHE_NAME) {
-                        return caches.delete(cache);
-                    }
+                    if (cache !== CACHE_NAME) return caches.delete(cache);
                 })
             );
         }).then(() => self.clients.claim())
     );
 });
 
-// 3. 攔截網絡請求：Firestore 數據放行，靜態檔案優先讀取本地緩存
 self.addEventListener('fetch', event => {
-    // 排除 Firebase 的 API 請求，交由 Firebase 自帶的離線持久化處理
-    if (event.request.url.includes('firestore.googleapis.com') || event.request.url.includes('firebasestorage.googleapis.com')) {
-        return;
-    }
+    if (event.request.url.includes('firestore.googleapis.com') || event.request.url.includes('firebasestorage.googleapis.com')) return;
     event.respondWith(
-        caches.match(event.request).then(response => {
-            // 優先回傳緩存，否則透過網絡抓取
-            return response || fetch(event.request).catch(() => caches.match('./index.html'));
-        })
+        caches.match(event.request).then(response => response || fetch(event.request).catch(() => caches.match('./index.html')))
     );
 });
