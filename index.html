@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terra資源系統 v1.0.0</title>
+    
+    <!-- PWA 核心設定 (Android 主要讀取呢個) -->
+    <link rel="manifest" href="./manifest.json">
+
+    <!-- 針對 Apple iOS / iPadOS 的專屬設定 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Terra資源">
+    <link rel="apple-touch-icon" href="./terra-192.png">
+    <link rel="icon" type="image/png" href="./terra-192.png">
+
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f7f6; }
+        
+        /* 頂部 Header 設計 (加入 Logo 及 版本號排版) */
+        .header { background-color: #007bff; color: white; padding: 15px; position: relative; display: flex; justify-content: center; align-items: center; }
+        .header-content { display: flex; align-items: center; font-size: 20px; font-weight: bold; }
+        .header-logo { width: 28px; height: 28px; margin-right: 10px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .version-tag { font-size: 12px; font-weight: normal; opacity: 0.9; position: absolute; right: 15px; background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px; }
+        
+        .nav-tabs { display: flex; flex-wrap: wrap; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .tab { flex: 1; min-width: 100px; text-align: center; padding: 12px; cursor: pointer; color: #555; font-weight: bold; border-bottom: 3px solid transparent; }
+        .tab.active { color: #007bff; border-bottom: 3px solid #007bff; }
+        .content-area { padding: 0 20px; }
+        
+        .doc-card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
+        .doc-info h4 { margin: 0 0 5px 0; color: #333; }
+        .doc-info span { font-size: 12px; color: #888; background: #eee; padding: 3px 8px; border-radius: 10px; margin-right: 5px; }
+        .open-btn { background: #007bff; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; text-decoration: none; font-size: 14px; font-weight: bold; }
+        .open-btn:hover { background: #0056b3; }
+        
+        /* 銷售工具專屬按鈕風格 */
+        .static-tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .tool-btn { background: linear-gradient(135deg, #007bff, #00d2ff); color: white; text-align: center; padding: 20px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 16px; box-shadow: 0 4px 10px rgba(0,123,255,0.3); }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="header-content">
+        <!-- 引入你的 Terra Logo -->
+        <img src="./terra-192.png" alt="Terra Logo" class="header-logo">
+        Terra資源系統
+    </div>
+    <span class="version-tag">v1.0.0</span>
+</div>
+
+<div class="nav-tabs">
+    <div class="tab active" onclick="switchTab('Memo')">Memo</div>
+    <div class="tab" onclick="switchTab('新聞')">新聞</div>
+    <div class="tab" onclick="switchTab('銷售工具')">銷售工具</div>
+</div>
+
+<div class="content-area" id="mainContent">
+    <!-- 銷售工具專屬連結 (預設隱藏，點擊 Tab 後顯示) -->
+    <div id="staticTools" style="display: none;">
+        <div class="static-tools-grid">
+            <a href="https://ivancww.github.io/avawealth" target="_blank" class="tool-btn">財富傳承系統</a>
+            <a href="https://ivancww.github.io/CIApp" target="_blank" class="tool-btn">危疾計數機</a>
+            <a href="https://ivancww.github.io/medicalclaims" target="_blank" class="tool-btn">醫療理賠指引</a>
+            <a href="https://ivancww.github.io/bodycheck" target="_blank" class="tool-btn">客戶體檢優惠</a>
+        </div>
+        <hr style="border:0; height:1px; background:#ddd; margin: 20px 0;">
+    </div>
+    
+    <!-- Firebase 動態資料列表 -->
+    <div id="dynamicList">資料載入中...</div>
+</div>
+
+<!-- 註冊 Service Worker (啟用 PWA 強制更新) -->
+<script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').then(reg => {
+            reg.addEventListener('updatefound', () => {
+                const newWorker = reg.installing;
+                newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'activated') {
+                        window.location.reload();
+                    }
+                });
+            });
+        });
+    }
+</script>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+    import { getFirestore, collection, query, orderBy, onSnapshot, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCUUqWRecCdnKB7ReNLuSoiDZEs7q9oSJ4",
+        authDomain: "terra-team.firebaseapp.com",
+        projectId: "terra-team",
+        storageBucket: "terra-team.firebasestorage.app",
+        messagingSenderId: "781876962987",
+        appId: "1:781876962987:web:33c1f7ae868fc3454779ee"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // 啟動 Firestore 離線模式
+    enableIndexedDbPersistence(db).catch(err => console.log("離線模式狀態: ", err.code));
+
+    let allDocs = [];
+    let currentTab = 'Memo';
+
+    // 實時監聽 Firestore 資料
+    const q = query(collection(db, "team_documents"), orderBy("createdAt", "desc"));
+    onSnapshot(q, (snapshot) => {
+        allDocs = snapshot.docs.map(doc => doc.data());
+        renderList();
+    });
+
+    window.switchTab = function(tabName) {
+        currentTab = tabName;
+        document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+        event.target.classList.add('active');
+        
+        document.getElementById('staticTools').style.display = (tabName === '銷售工具') ? 'block' : 'none';
+        renderList();
+    };
+
+    function renderList() {
+        const listDiv = document.getElementById('dynamicList');
+        listDiv.innerHTML = '';
+        
+        const filteredDocs = allDocs.filter(doc => doc.mainSection === currentTab);
+        
+        if(filteredDocs.length === 0) {
+            listDiv.innerHTML = '<p style="text-align:center; color:#888;">此分類暫無資料</p>';
+            return;
+        }
+
+        filteredDocs.forEach(data => {
+            const targetUrl = (data.externalLink && data.externalLink !== "") ? data.externalLink : data.fileUrl;
+            const subTag = data.subCategory ? `<span>${data.subCategory}</span>` : '';
+            const monthTag = data.uploadMonth ? `<span>${data.uploadMonth}</span>` : '';
+
+            listDiv.innerHTML += `
+                <div class="doc-card">
+                    <div class="doc-info">
+                        <h4>${data.title}</h4>
+                        ${monthTag} ${subTag}
+                    </div>
+                    <a href="${targetUrl}" target="_blank" class="open-btn">開啟</a>
+                </div>
+            `;
+        });
+    }
+</script>
+</body>
+</html>
