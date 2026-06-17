@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terra資源系統 v1.7.0</title>
+    <title>Terra資源系統 v1.8.0</title>
     <link rel="manifest" href="./manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -13,10 +13,13 @@
         :root { --brand-color: #0d1b2a; --bg-color: #f4f7f6; --text-main: #333; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg-color); margin: 0; padding-bottom: 30px; -webkit-user-select: none; }
         
+        /* 頂部導航與按鈕 */
         .header { background: var(--brand-color); color: white; padding: 18px; text-align: center; font-weight: bold; font-size: 1.2em; position: relative; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
         .header img { width: 28px; height: 28px; margin-right: 10px; border-radius: 4px; cursor: pointer; }
         .version-tag { font-size: 11px; background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px; position: absolute; right: 15px; }
+        .noti-btn { position: absolute; right: 65px; background: #ffc107; color: #333; border: none; padding: 4px 8px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 11px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
         .back-btn { display: none; background: rgba(255,255,255,0.2); color: white; border: none; padding: 6px 12px; border-radius: 4px; position: absolute; left: 15px; cursor: pointer; font-size: 13px; font-weight: bold; }
+
         .container { padding: 20px; max-width: 800px; margin: 0 auto; }
         
         /* 📱 主頁公事包排版 */
@@ -27,31 +30,32 @@
         .briefcase-icon { font-size: 45px; margin-bottom: 12px; display: block; }
         .briefcase-title { font-size: 16px; font-weight: bold; color: var(--brand-color); }
         
+        /* 獨立資料頁面 */
         .page-view { display: none; }
         .page-title { font-size: 20px; font-weight: bold; color: var(--brand-color); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--brand-color); padding-bottom: 8px; }
         .filter-section { display: flex; gap: 10px; margin-bottom: 15px; }
         .filter-section select { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 14px; background-color: white; font-weight: bold; }
         
+        /* 資料卡片 */
         .card { background: white; padding: 16px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; justify-content: space-between; align-items: center; }
         .card-info h4 { margin: 0 0 6px 0; font-size: 16px; color: var(--text-main); }
         .card-info span { font-size: 11px; color: #666; background: #eef2f5; padding: 3px 8px; border-radius: 12px; margin-right: 5px; font-weight: bold; }
         .new-badge { color: #dc3545; font-size: 11px; font-weight: bold; background: #ffeeba; padding: 2px 6px; border-radius: 4px; margin-left: 5px; animation: pulse 2s infinite; }
         .open-btn { background: var(--brand-color); color: white; border: none; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: bold; white-space: nowrap; box-shadow: 0 2px 6px rgba(13,27,42,0.2); }
 
-        /* 💼 銷售工具 */
+        /* 💼 銷售工具專屬獨立 Logo 排版 */
         .tools-list { display: flex; flex-direction: column; gap: 15px; margin-top: 10px; }
         .tool-item { background: white; padding: 15px; border-radius: 14px; display: flex; align-items: center; text-decoration: none; box-shadow: 0 4px 10px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.02); }
+        .tool-item:active { background: #f0f0f0; }
         .tool-logo { width: 45px; height: 45px; border-radius: 10px; margin-right: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); object-fit: cover; }
         .tool-info { flex: 1; }
         .tool-name { font-size: 16px; font-weight: bold; color: var(--brand-color); margin: 0 0 4px 0; }
         .tool-desc { font-size: 12px; color: #777; margin: 0; }
         .tool-arrow { color: #ccc; font-size: 20px; font-weight: bold; margin-left: 10px; }
 
-        /* 🆕 Android 專用頂部智慧下載橫幅 */
+        /* 🆕 Android & iOS 安裝引導 */
         .android-install-banner { display: none; background: #28a745; color: white; padding: 12px 20px; font-weight: bold; font-size: 14px; justify-content: space-between; align-items: center; box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
         .android-btn { background: white; color: #28a745; border: none; padding: 6px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; }
-
-        /* 🆕 iOS 專用底部彈出型指引精靈 */
         .ios-guide-box { display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: white; color: #333; padding: 15px; border-radius: 14px; box-shadow: 0 8px 30px rgba(0,0,0,0.2); width: 85%; max-width: 340px; text-align: center; font-size: 13px; font-weight: bold; border: 2px solid var(--brand-color); z-index: 9999; }
         .ios-guide-box::after { content: ''; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); border-width: 10px 10px 0; border-style: solid; border-color: white transparent; display: block; width: 0; }
         .ios-icon-span { font-size: 18px; vertical-align: middle; background: #eee; padding: 2px 6px; border-radius: 4px; }
@@ -62,7 +66,7 @@
 <body>
 
 <div id="androidBanner" class="android-install-banner">
-    <span>📥 撳此將「Terra資源系統」安全安裝至手機桌面</span>
+    <span>📥 撳此將系統安裝至手機桌面</span>
     <button class="android-btn" onclick="triggerAndroidInstall()">即刻安裝</button>
 </div>
 
@@ -70,10 +74,14 @@
     <button class="back-btn" id="backBtn" onclick="backToDashboard()">⬅️ 主頁</button>
     <img src="./terra-192.png" alt="Logo" onclick="goToAdmin()">
     <span id="headerTitle">Terra資源系統</span>
-    <span class="version-tag">v1.7.0</span>
+    
+    <button class="noti-btn" onclick="enableNotifications()">🔔 通知</button>
+    
+    <span class="version-tag">v1.8.0</span>
 </div>
 
 <div class="container">
+    
     <div id="dashboardView" class="app-grid">
         <div class="briefcase-card" onclick="openSection('Memo', '📝 Memo')"><span class="briefcase-icon">📝</span><span class="briefcase-title">Memo</span></div>
         <div class="briefcase-card" onclick="openSection('新聞', '📰 新聞')"><span class="briefcase-icon">📰</span><span class="briefcase-title">新聞通告</span></div>
@@ -85,18 +93,21 @@
 
     <div id="pageView" class="page-view">
         <div class="page-title" id="pageTitleDisplay">分類名稱</div>
+        
         <div class="filter-section" id="filterArea">
             <select id="monthFilter" onchange="renderList()"><option value="">所有月份搜尋</option></select>
             <select id="subCatFilter" onchange="renderList()" style="display: none;">
-                <option value="">所有副分類</option><option value="推廣優惠">推廣優惠</option>
-                <option value="公司獎賞">公司獎賞</option><option value="公司會議">公司會議</option>
+                <option value="">所有副分類</option>
+                <option value="推廣優惠">推廣優惠</option>
+                <option value="公司獎賞">公司獎賞</option>
+                <option value="公司會議">公司會議</option>
                 <option value="產品更新資料">產品更新資料</option>
             </select>
         </div>
 
         <div id="staticTools" style="display: none;" class="tools-list">
             <a href="https://ivancww.github.io/avawealth" target="_blank" class="tool-item">
-                <img src="./wealth-192.png" class="tool-logo"><div class="tool-info"><p class="tool-name">財富傳承系統</p><p class="tool-desc">資產傳承與信託規劃簡報工具</p></div><span class="tool-arrow">›</span>
+                <img src="./wealth-192.png" class="tool-logo"><div class="tool-info"><p class="tool-name">財富傳承系統</p><p class="tool-desc">資產傳承與信託規劃簡報 PWA 工具</p></div><span class="tool-arrow">›</span>
             </a>
             <a href="https://ivancww.github.io/CIApp" target="_blank" class="tool-item">
                 <img src="./CI-192.png" class="tool-logo"><div class="tool-info"><p class="tool-name">危疾計數機</p><p class="tool-desc">最新危疾保障保費及保額即時試算</p></div><span class="tool-arrow">›</span>
@@ -104,10 +115,12 @@
             <a href="https://ivancww.github.io/medicalclaims" target="_blank" class="tool-item">
                 <img src="./medical-192.png" class="tool-logo"><div class="tool-info"><p class="tool-name">醫療理賠指引</p><p class="tool-desc">核心高端醫療理賠流程與程序備忘</p></div><span class="tool-arrow">›</span>
             </a>
-            <hr style="border:0; height:1px; background:#ddd; margin: 15px 0;">
+            <hr style="border:0; height:1px; background:#ddd; margin: 20px 0;">
         </div>
+
         <div id="dynamicList">資料載入中...</div>
     </div>
+
 </div>
 
 <div id="iosGuide" class="ios-guide-box">
@@ -117,12 +130,15 @@
 </div>
 
 <script>
-    function goToAdmin() { if(prompt("🔑 請輸入管理員密碼：") === "Terra2026") window.location.href = "./admin.html"; }
+    function goToAdmin() {
+        if(prompt("🔑 請輸入管理員密碼：") === "Terra2026") { window.location.href = "./admin.html"; }
+    }
 </script>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getFirestore, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getFirestore, collection, query, orderBy, onSnapshot, setDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-messaging.js";
 
     const app = initializeApp({
         apiKey: "AIzaSyCUUqWRecCdnKB7ReNLuSoiDZEs7q9oSJ4",
@@ -132,16 +148,42 @@
         messagingSenderId: "781876962987",
         appId: "1:781876962987:web:33c1f7ae868fc3454779ee"
     });
+    
     const db = getFirestore(app);
+    const messaging = getMessaging(app);
     let allDocs = [];
     let currentSection = 'Memo';
 
-    // 🆕 智能裝置檢測與提示引擎
+    // 🔔 收到推播通知時的前台彈窗處理
+    onMessage(messaging, (payload) => {
+        alert(`🚨 系統新消息：\n${payload.notification.title}\n${payload.notification.body}`);
+    });
+
+    // 🔔 獲取使用者權限並儲存 Token 入資料庫名冊
+    window.enableNotifications = async () => {
+        try {
+            const permission = await Notification.requestPermission();
+            if (permission === 'granted') {
+                const token = await getToken(messaging, { vapidKey: 'BFXLE7KoKWIL459hYUUnQ7lqBu61pZjR780tWI2uEpICiv6Jg-rIokD8qt0tHzXYILgOGyc5J1BEmT_OpGjsgYg' });
+                if (token) {
+                    await setDoc(doc(db, 'fcm_tokens', token), { token: token, createdAt: new Date() });
+                    alert("✅ 成功開啟通知！你的裝置已加入接收名冊，將會收到系統最新更新。");
+                }
+            } else {
+                alert("你拒絕咗通知權限。");
+            }
+        } catch (error) {
+            console.error(error);
+            alert("開啟通知失敗。請確保你已將 App 加入主畫面，並直接從桌面開啟使用。");
+        }
+    };
+
+    // 📱 安裝引導邏輯
     let deferredPrompt;
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
-        document.getElementById('androidBanner').style.display = 'flex'; // 顯示 Android 安裝欄
+        document.getElementById('androidBanner').style.display = 'flex'; 
     });
 
     window.triggerAndroidInstall = async () => {
@@ -157,10 +199,11 @@
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
         if (isIOS && !isStandalone) {
-            document.getElementById('iosGuide').style.display = 'block'; // 彈出 iOS 提示
+            document.getElementById('iosGuide').style.display = 'block';
         }
     });
 
+    // 🗂️ Firestore 資料讀取與顯示邏輯
     onSnapshot(query(collection(db, "data"), orderBy("createdAt", "desc")), (snapshot) => {
         allDocs = snapshot.docs.map(doc => doc.data());
         updateMonthFilterOptions();
@@ -183,9 +226,13 @@
         document.getElementById('backBtn').style.display = 'block';
         document.getElementById('pageTitleDisplay').innerText = displayName;
         document.getElementById('headerTitle').innerText = sectionName;
+
         document.getElementById('staticTools').style.display = (sectionName === '銷售工具') ? 'flex' : 'none';
         document.getElementById('subCatFilter').style.display = (sectionName === 'Memo') ? 'block' : 'none';
         document.getElementById('filterArea').style.display = (sectionName === '銷售工具') ? 'none' : 'flex';
+        
+        document.getElementById('monthFilter').value = "";
+        document.getElementById('subCatFilter').value = "";
         renderList();
     };
 
@@ -201,28 +248,42 @@
         const mFilter = document.getElementById('monthFilter').value;
         const sFilter = document.getElementById('subCatFilter').value;
         listDiv.innerHTML = '';
+        
         let filteredDocs = allDocs.filter(d => d.section === currentSection);
         if (mFilter) filteredDocs = filteredDocs.filter(d => d.uploadMonth === mFilter);
         if (currentSection === 'Memo' && sFilter) filteredDocs = filteredDocs.filter(d => d.subCategory === sFilter);
-        if(filteredDocs.length === 0) { listDiv.innerHTML = '<p style="text-align:center; color:#888; padding: 20px 0;">該項目暫無動態上載資料</p>'; return; }
         
+        if(filteredDocs.length === 0) { 
+            listDiv.innerHTML = '<p style="text-align:center; color:#888; padding: 20px 0;">該項目暫無動態上載資料</p>'; 
+            return; 
+        }
+
         const now = new Date();
         filteredDocs.forEach(data => {
             const isNew = data.createdAt && (now - data.createdAt.toDate()) < 604800000;
             const newBadge = isNew ? `<span class="new-badge">❗新更新</span>` : '';
+            const mTag = data.uploadMonth ? `<span>${data.uploadMonth}</span>` : '';
+            const sTag = data.subCategory ? `<span>${data.subCategory}</span>` : '';
+
             listDiv.innerHTML += `
                 <div class="card">
-                    <div class="card-info"><h4>${data.title} ${newBadge}</h4><div><span>${data.uploadMonth || ''}</span><span>${data.subCategory || ''}</span></div></div>
+                    <div class="card-info">
+                        <h4>${data.title} ${newBadge}</h4>
+                        <div>${mTag} ${sTag}</div>
+                    </div>
                     <a href="${data.url}" target="_blank" class="open-btn">開啟</a>
                 </div>`;
         });
     }
 
+    // ⚙️ PWA Service Worker 註冊
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js').then(reg => {
             reg.addEventListener('updatefound', () => {
                 const newWorker = reg.installing;
-                newWorker.addEventListener('statechange', () => { if (newWorker.state === 'activated') window.location.reload(); });
+                newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'activated') window.location.reload();
+                });
             });
         });
     }
