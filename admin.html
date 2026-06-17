@@ -51,7 +51,7 @@
         <div class="briefcase-card" onclick="openAdminSection('分享', '🗣️ 分享 管理後台')"><span class="briefcase-icon">🗣️</span><span class="briefcase-title">同事分享</span></div>
         <div class="briefcase-card" onclick="openAdminSection('區會議', '🗓️ 區會議 管理後台')"><span class="briefcase-icon">🗓️</span><span class="briefcase-title">區會議記錄</span></div>
         <div class="briefcase-card" onclick="openAdminSection('區活動', '🎉 區活動 管理後台')"><span class="briefcase-icon">🎉</span><span class="briefcase-title">區活動花絮</span></div>
-        <div class="briefcase-card" onclick="openSection('銷售工具', '💼 銷售工具')"><span class="briefcase-icon">💼</span><span class="briefcase-title">銷售工具連結</span></div>
+        <div class="briefcase-card" onclick="openAdminSection('銷售工具', '💼 銷售工具 管理後台')"><span class="briefcase-icon">💼</span><span class="briefcase-title">銷售工具連結</span></div>
     </div>
 
     <div id="qrcodeSection" class="qrcode-box">
@@ -104,7 +104,6 @@
     let allData = [];
     let currentAdminSection = 'Memo';
 
-    // 🛑 已經更新為你最新畀我嘅 GAS Link
     const GAS_URL = "https://script.google.com/macros/s/AKfycbzoa4HBh9fLLjyc4FX1Z6kdNQ_ipkZRtfhsrptU9K3_rmhRsIkt49JBMstPbfL73L5kSw/exec";
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -162,7 +161,6 @@
         let url = document.getElementById('adminLink').value.trim();
         const file = document.getElementById('adminFile').files[0];
         
-        // 🛑 已經徹底移除「必須填寫主題」的 alert 阻擋，如果留空就自動變「最新資訊」
         const finalTitle = titleInput || "最新資訊";
         
         document.getElementById('submitBtn').disabled = true;
