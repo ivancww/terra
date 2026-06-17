@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terra資源系統 v1.8.8</title>
+    <title>Terra資源系統 v1.8.9</title>
     <link rel="manifest" href="./manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -19,12 +19,18 @@
         .noti-btn.success { background: #28a745; color: white; }
         .back-btn { display: none; background: rgba(255,255,255,0.2); color: white; border: none; padding: 6px 12px; border-radius: 4px; position: absolute; left: 15px; cursor: pointer; font-size: 13px; font-weight: bold; }
         .container { padding: 20px; max-width: 800px; margin: 0 auto; }
+        
+        /* 📱 主頁公事包九宮格 */
         .app-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 30px; }
         @media(min-width: 600px) { .app-grid { grid-template-columns: repeat(3, 1fr); } }
-        .briefcase-card { background: white; border-radius: 16px; padding: 25px 15px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgba(0,0,0,0.03); }
+        .briefcase-card { background: white; border-radius: 16px; padding: 25px 15px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgba(0,0,0,0.03); position: relative; }
         .briefcase-card:active { transform: scale(0.95); box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
         .briefcase-icon { font-size: 45px; margin-bottom: 12px; display: block; }
-        .briefcase-title { font-size: 16px; font-weight: bold; color: var(--brand-color); }
+        .briefcase-title { font-size: 16px; font-weight: bold; color: var(--brand-color); display: flex; align-items: center; gap: 4px; }
+        
+        /* 🆕 主頁專屬閃爍紅點標籤 */
+        .dash-badge { color: #dc3545; font-size: 11px; font-weight: bold; background: #ffeeba; padding: 1px 5px; border-radius: 4px; display: none; animation: pulse 2s infinite; }
+        
         .page-view { display: none; }
         .page-title { font-size: 20px; font-weight: bold; color: var(--brand-color); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--brand-color); padding-bottom: 8px; }
         .filter-section { display: flex; gap: 10px; margin-bottom: 15px; }
@@ -51,6 +57,7 @@
         .ios-guide-box { display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: white; color: #333; padding: 15px; border-radius: 14px; box-shadow: 0 8px 30px rgba(0,0,0,0.2); width: 85%; max-width: 340px; text-align: center; font-size: 13px; font-weight: bold; border: 2px solid var(--brand-color); z-index: 9999; }
         .ios-guide-box::after { content: ''; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); border-width: 10px 10px 0; border-style: solid; border-color: white transparent; display: block; width: 0; }
         .ios-icon-span { font-size: 18px; vertical-align: middle; background: #eee; padding: 2px 6px; border-radius: 4px; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
@@ -62,17 +69,17 @@
     <img src="./terra-192.png" alt="Logo" onclick="goToAdmin()">
     <span id="headerTitle">Terra資源系統</span>
     <button class="noti-btn" id="notiBtn" onclick="enableNotifications()">🔔 通知</button>
-    <span class="version-tag">v1.8.8</span>
+    <span class="version-tag">v1.8.9</span>
 </div>
 
 <div class="container">
     <div id="dashboardView" class="app-grid">
-        <div class="briefcase-card" onclick="openSection('Memo', '📝 Memo')"><span class="briefcase-icon">📝</span><span class="briefcase-title">Memo</span></div>
-        <div class="briefcase-card" onclick="openSection('新聞', '📰 新聞')"><span class="briefcase-icon">📰</span><span class="briefcase-title">新聞通告</span></div>
-        <div class="briefcase-card" onclick="openSection('分享', '🗣️ 分享')"><span class="briefcase-icon">🗣️</span><span class="briefcase-title">同事分享</span></div>
-        <div class="briefcase-card" onclick="openSection('區會議', '🗓️ 區會議')"><span class="briefcase-icon">🗓️</span><span class="briefcase-title">區會議記錄</span></div>
-        <div class="briefcase-card" onclick="openSection('區活動', '🎉 區活動')"><span class="briefcase-icon">🎉</span><span class="briefcase-title">區活動花絮</span></div>
-        <div class="briefcase-card" onclick="openSection('銷售工具', '💼 銷售工具')"><span class="briefcase-icon">💼</span><span class="briefcase-title">銷售工具</span></div>
+        <div class="briefcase-card" onclick="openSection('Memo', '📝 Memo')"><span class="briefcase-icon">📝</span><span class="briefcase-title">Memo <span id="dot-Memo" class="dash-badge">🔴 NEW</span></span></div>
+        <div class="briefcase-card" onclick="openSection('新聞', '📰 新聞')"><span class="briefcase-icon">📰</span><span class="briefcase-title">新聞通告 <span id="dot-新聞" class="dash-badge">🔴 NEW</span></span></div>
+        <div class="briefcase-card" onclick="openSection('分享', '🗣️ 分享')"><span class="briefcase-icon">🗣️</span><span class="briefcase-title">同事分享 <span id="dot-分享" class="dash-badge">🔴 NEW</span></span></div>
+        <div class="briefcase-card" onclick="openSection('區會議', '🗓️ 區會議')"><span class="briefcase-icon">🗓️</span><span class="briefcase-title">區會議記錄 <span id="dot-區會議" class="dash-badge">🔴 NEW</span></span></div>
+        <div class="briefcase-card" onclick="openSection('區活動', '🎉 區活動')"><span class="briefcase-icon">🎉</span><span class="briefcase-title">區活動花絮 <span id="dot-區活動" class="dash-badge">🔴 NEW</span></span></div>
+        <div class="briefcase-card" onclick="openSection('銷售工具', '💼 銷售工具')"><span class="briefcase-icon">💼</span><span class="briefcase-title">銷售工具 <span id="dot-銷售工具" class="dash-badge">🔴 NEW</span></span></div>
     </div>
 
     <div id="pageView" class="page-view">
@@ -128,7 +135,6 @@
     let allDocs = [];
     let currentSection = 'Memo';
 
-    // 🛑 已經更新為你最新畀我嘅 GAS Link
     const GAS_URL = "https://script.google.com/macros/s/AKfycbzoa4HBh9fLLjyc4FX1Z6kdNQ_ipkZRtfhsrptU9K3_rmhRsIkt49JBMstPbfL73L5kSw/exec";
 
     onMessage(messaging, (payload) => { showModal("🚨", `系統新消息：\n\n${payload.notification.title}\n${payload.notification.body}`); });
@@ -147,9 +153,7 @@
             let registration = await navigator.serviceWorker.getRegistration();
             if (!registration) registration = await navigator.serviceWorker.register('./sw.js');
             const token = await getToken(messaging, { vapidKey: 'BFXLE7KoKWIL459hYUUnQ7lqBu61pZjR780tWI2uEpICiv6Jg-rIokD8qt0tHzXYILgOGyc5J1BEmT_OpGjsgYg', serviceWorkerRegistration: registration });
-            if (token) {
-                fetch(`${GAS_URL}?action=register&token=${encodeURIComponent(token)}`, { mode: 'no-cors' });
-            }
+            if (token) { fetch(`${GAS_URL}?action=register&token=${encodeURIComponent(token)}`, { mode: 'no-cors' }); }
         } catch (e) {}
     }
 
@@ -161,9 +165,7 @@
             const isIOS = (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) && !window.MSStream;
             const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
 
-            if (isIOS && !isStandalone) {
-                return showModal("🍎", "Apple 系統嚴格限制：\n\n請先依照畫面底部指示，將系統「加至主畫面」，然後從桌面打開 App，才能成功開啟通知！");
-            }
+            if (isIOS && !isStandalone) { return showModal("🍎", "Apple 系統嚴格限制：\n\n請先依照畫面底部指示，將系統「加至主畫面」，然後從桌面打開 App，才能成功開啟通知！"); }
 
             const permission = await Notification.requestPermission();
             if (permission !== 'granted') { return showModal("❌", "你拒絕咗通知權限，請去手機系統設定允許通知。"); }
@@ -179,12 +181,11 @@
             if (token) {
                 await fetch(`${GAS_URL}?action=register&token=${encodeURIComponent(token)}`, { mode: 'no-cors' });
                 localStorage.setItem('terra_noti_enabled', 'true');
-                
                 showModal("✅", "成功開啟通知！你的裝置已加入接收名冊，將會收到系統最新更新。");
                 notiBtn.innerText = "✅ 已開啟";
                 notiBtn.classList.add('success');
             } else {
-                showModal("⚠️", "無法獲取驗證碼，請確保使用 Chrome (Android) 或 已安裝至桌面的 App (iOS) 重試。");
+                showModal("⚠️", "無法獲取驗證碼，請確保使用手機桌面 App 重試。");
                 notiBtn.innerText = "🔔 通知";
             }
         } catch (error) {
@@ -195,21 +196,34 @@
         }
     };
 
-    let deferredPrompt;
-    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('androidBanner').style.display = 'flex'; });
-    window.triggerAndroidInstall = async () => { if (deferredPrompt) { deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; if (outcome === 'accepted') document.getElementById('androidBanner').style.display = 'none'; deferredPrompt = null; } };
-
-    setTimeout(() => {
-        const isIOS = (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) && !window.MSStream;
-        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
-        if (isIOS && !isStandalone) document.getElementById('iosGuide').style.display = 'block';
-    }, 500);
-
+    // 實時讀取 Firestore 並全自動觸發前台所有提示
     onSnapshot(query(collection(db, "data"), orderBy("createdAt", "desc")), (snapshot) => {
         allDocs = snapshot.docs.map(doc => doc.data());
         updateMonthFilterOptions();
         renderList();
+        updateDashboardBadges(); // 🆕 實時連動主頁九宮格紅點提示
     });
+
+    // 🆕 智能檢查邊個九宮格分類有 7 日內嘅新上載，全自動亮起紅點
+    function updateDashboardBadges() {
+        const sections = ['Memo', '新聞', '分享', '區會議', '區活動', '銷售工具'];
+        const now = new Date();
+        
+        sections.forEach(s => {
+            const dot = document.getElementById(`dot-${s}`);
+            if(dot) dot.style.display = 'none';
+        });
+
+        allDocs.forEach(data => {
+            if (data.createdAt) {
+                const isNew = (now - data.createdAt.toDate()) < 604800000; // 7日內
+                if (isNew && sections.includes(data.section)) {
+                    const dot = document.getElementById(`dot-${data.section}`);
+                    if(dot) dot.style.display = 'inline-block';
+                }
+            }
+        });
+    }
 
     function updateMonthFilterOptions() {
         const monthSelect = document.getElementById('monthFilter');
