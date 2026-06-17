@@ -3,84 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terra資源系統 v1.5.0</title>
+    <title>Terra資源系統 v1.7.0</title>
     <link rel="manifest" href="./manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="./terra-192.png">
     
     <style>
-        /* 內嵌樣式表 */
         :root { --brand-color: #0d1b2a; --bg-color: #f4f7f6; --text-main: #333; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg-color); margin: 0; padding-bottom: 50px; }
-        .header { background: var(--brand-color); color: white; padding: 15px; text-align: center; font-weight: bold; font-size: 1.2em; position: relative; display: flex; justify-content: center; align-items: center; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg-color); margin: 0; padding-bottom: 30px; -webkit-user-select: none; }
+        
+        .header { background: var(--brand-color); color: white; padding: 18px; text-align: center; font-weight: bold; font-size: 1.2em; position: relative; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
         .header img { width: 28px; height: 28px; margin-right: 10px; border-radius: 4px; cursor: pointer; }
-        .version-tag { font-size: 11px; background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px; position: absolute; right: 15px; top: 18px; }
-        .nav { display: flex; overflow-x: auto; background: white; padding: 10px; gap: 10px; border-bottom: 1px solid #ddd; white-space: nowrap; }
-        .nav div { padding: 8px 12px; border-radius: 20px; background: #eee; cursor: pointer; font-size: 14px; font-weight: bold; color: #555; }
-        .nav div.active { background: var(--brand-color); color: white; }
-        .content-area { padding: 15px; }
+        .version-tag { font-size: 11px; background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px; position: absolute; right: 15px; }
+        .back-btn { display: none; background: rgba(255,255,255,0.2); color: white; border: none; padding: 6px 12px; border-radius: 4px; position: absolute; left: 15px; cursor: pointer; font-size: 13px; font-weight: bold; }
+        .container { padding: 20px; max-width: 800px; margin: 0 auto; }
+        
+        /* 📱 主頁公事包排版 */
+        .app-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 30px; }
+        @media(min-width: 600px) { .app-grid { grid-template-columns: repeat(3, 1fr); } }
+        .briefcase-card { background: white; border-radius: 16px; padding: 25px 15px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgba(0,0,0,0.03); }
+        .briefcase-card:active { transform: scale(0.95); box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+        .briefcase-icon { font-size: 45px; margin-bottom: 12px; display: block; }
+        .briefcase-title { font-size: 16px; font-weight: bold; color: var(--brand-color); }
+        
+        .page-view { display: none; }
+        .page-title { font-size: 20px; font-weight: bold; color: var(--brand-color); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--brand-color); padding-bottom: 8px; }
         .filter-section { display: flex; gap: 10px; margin-bottom: 15px; }
-        .filter-section select { flex: 1; padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 14px; background-color: white; }
-        .card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
-        .card-info h4 { margin: 0 0 5px 0; font-size: 15px; color: var(--text-main); }
-        .card-info span { font-size: 12px; color: #666; background: #eef2f5; padding: 3px 8px; border-radius: 12px; margin-right: 5px; }
-        .new-badge { color: #dc3545; font-size: 11px; font-weight: bold; background: #ffeeba; padding: 2px 6px; border-radius: 4px; margin-left: 5px; }
-        .open-btn { background: var(--brand-color); color: white; border: none; padding: 8px 15px; border-radius: 5px; text-decoration: none; font-size: 13px; font-weight: bold; white-space: nowrap; }
-        .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-        .tool-btn { background: linear-gradient(135deg, var(--brand-color), #00d2ff); color: white; text-align: center; padding: 20px 10px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 14px; }
+        .filter-section select { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 14px; background-color: white; font-weight: bold; }
+        
+        .card { background: white; padding: 16px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; justify-content: space-between; align-items: center; }
+        .card-info h4 { margin: 0 0 6px 0; font-size: 16px; color: var(--text-main); }
+        .card-info span { font-size: 11px; color: #666; background: #eef2f5; padding: 3px 8px; border-radius: 12px; margin-right: 5px; font-weight: bold; }
+        .new-badge { color: #dc3545; font-size: 11px; font-weight: bold; background: #ffeeba; padding: 2px 6px; border-radius: 4px; margin-left: 5px; animation: pulse 2s infinite; }
+        .open-btn { background: var(--brand-color); color: white; border: none; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: bold; white-space: nowrap; box-shadow: 0 2px 6px rgba(13,27,42,0.2); }
+
+        /* 💼 銷售工具 */
+        .tools-list { display: flex; flex-direction: column; gap: 15px; margin-top: 10px; }
+        .tool-item { background: white; padding: 15px; border-radius: 14px; display: flex; align-items: center; text-decoration: none; box-shadow: 0 4px 10px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.02); }
+        .tool-logo { width: 45px; height: 45px; border-radius: 10px; margin-right: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); object-fit: cover; }
+        .tool-info { flex: 1; }
+        .tool-name { font-size: 16px; font-weight: bold; color: var(--brand-color); margin: 0 0 4px 0; }
+        .tool-desc { font-size: 12px; color: #777; margin: 0; }
+        .tool-arrow { color: #ccc; font-size: 20px; font-weight: bold; margin-left: 10px; }
+
+        /* 🆕 Android 專用頂部智慧下載橫幅 */
+        .android-install-banner { display: none; background: #28a745; color: white; padding: 12px 20px; font-weight: bold; font-size: 14px; justify-content: space-between; align-items: center; box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
+        .android-btn { background: white; color: #28a745; border: none; padding: 6px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+
+        /* 🆕 iOS 專用底部彈出型指引精靈 */
+        .ios-guide-box { display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: white; color: #333; padding: 15px; border-radius: 14px; box-shadow: 0 8px 30px rgba(0,0,0,0.2); width: 85%; max-width: 340px; text-align: center; font-size: 13px; font-weight: bold; border: 2px solid var(--brand-color); z-index: 9999; }
+        .ios-guide-box::after { content: ''; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); border-width: 10px 10px 0; border-style: solid; border-color: white transparent; display: block; width: 0; }
+        .ios-icon-span { font-size: 18px; vertical-align: middle; background: #eee; padding: 2px 6px; border-radius: 4px; }
+        
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
 
+<div id="androidBanner" class="android-install-banner">
+    <span>📥 撳此將「Terra資源系統」安全安裝至手機桌面</span>
+    <button class="android-btn" onclick="triggerAndroidInstall()">即刻安裝</button>
+</div>
+
 <div class="header">
-    <!-- 加入 onclick 跳轉邏輯 -->
-    <img src="./terra-192.png" alt="Logo" onclick="goToAdmin()">Terra資源系統
-    <span class="version-tag">v1.5.0</span>
+    <button class="back-btn" id="backBtn" onclick="backToDashboard()">⬅️ 主頁</button>
+    <img src="./terra-192.png" alt="Logo" onclick="goToAdmin()">
+    <span id="headerTitle">Terra資源系統</span>
+    <span class="version-tag">v1.7.0</span>
 </div>
 
-<div class="nav" id="tabs">
-    <div class="active" onclick="switchTab('Memo')">📝 Memo</div>
-    <div onclick="switchTab('新聞')">📰 新聞</div>
-    <div onclick="switchTab('分享')">🗣️ 分享</div>
-    <div onclick="switchTab('區會議')">🗓️ 區會議</div>
-    <div onclick="switchTab('區活動')">🎉 區活動</div>
-    <div onclick="switchTab('銷售工具')">💼 工具</div>
-</div>
-
-<div class="content-area">
-    <div class="filter-section" id="filterArea">
-        <select id="monthFilter" onchange="renderList()"><option value="">所有月份</option></select>
-        <select id="subCatFilter" onchange="renderList()" style="display: none;">
-            <option value="">所有副分類</option>
-            <option value="推廣優惠">推廣優惠</option>
-            <option value="公司獎賞">公司獎賞</option>
-            <option value="公司會議">公司會議</option>
-            <option value="產品更新資料">產品更新資料</option>
-        </select>
+<div class="container">
+    <div id="dashboardView" class="app-grid">
+        <div class="briefcase-card" onclick="openSection('Memo', '📝 Memo')"><span class="briefcase-icon">📝</span><span class="briefcase-title">Memo</span></div>
+        <div class="briefcase-card" onclick="openSection('新聞', '📰 新聞')"><span class="briefcase-icon">📰</span><span class="briefcase-title">新聞通告</span></div>
+        <div class="briefcase-card" onclick="openSection('分享', '🗣️ 分享')"><span class="briefcase-icon">🗣️</span><span class="briefcase-title">同事分享</span></div>
+        <div class="briefcase-card" onclick="openSection('區會議', '🗓️ 區會議')"><span class="briefcase-icon">🗓️</span><span class="briefcase-title">區會議記錄</span></div>
+        <div class="briefcase-card" onclick="openSection('區活動', '🎉 區活動')"><span class="briefcase-icon">🎉</span><span class="briefcase-title">區活動花絮</span></div>
+        <div class="briefcase-card" onclick="openSection('銷售工具', '💼 銷售工具')"><span class="briefcase-icon">💼</span><span class="briefcase-title">銷售工具</span></div>
     </div>
 
-    <div id="staticTools" style="display: none;">
-        <div class="tools-grid">
-            <a href="https://ivancww.github.io/avawealth" target="_blank" class="tool-btn">財富傳承系統</a>
-            <a href="https://ivancww.github.io/CIApp" target="_blank" class="tool-btn">危疾計數機</a>
-            <a href="https://ivancww.github.io/medicalclaims" target="_blank" class="tool-btn">醫療理賠指引</a>
+    <div id="pageView" class="page-view">
+        <div class="page-title" id="pageTitleDisplay">分類名稱</div>
+        <div class="filter-section" id="filterArea">
+            <select id="monthFilter" onchange="renderList()"><option value="">所有月份搜尋</option></select>
+            <select id="subCatFilter" onchange="renderList()" style="display: none;">
+                <option value="">所有副分類</option><option value="推廣優惠">推廣優惠</option>
+                <option value="公司獎賞">公司獎賞</option><option value="公司會議">公司會議</option>
+                <option value="產品更新資料">產品更新資料</option>
+            </select>
         </div>
-        <hr style="border:0; height:1px; background:#ddd; margin: 20px 0;">
-    </div>
 
-    <div id="dynamicList">資料載入中...</div>
+        <div id="staticTools" style="display: none;" class="tools-list">
+            <a href="https://ivancww.github.io/avawealth" target="_blank" class="tool-item">
+                <img src="./wealth-192.png" class="tool-logo"><div class="tool-info"><p class="tool-name">財富傳承系統</p><p class="tool-desc">資產傳承與信託規劃簡報工具</p></div><span class="tool-arrow">›</span>
+            </a>
+            <a href="https://ivancww.github.io/CIApp" target="_blank" class="tool-item">
+                <img src="./CI-192.png" class="tool-logo"><div class="tool-info"><p class="tool-name">危疾計數機</p><p class="tool-desc">最新危疾保障保費及保額即時試算</p></div><span class="tool-arrow">›</span>
+            </a>
+            <a href="https://ivancww.github.io/medicalclaims" target="_blank" class="tool-item">
+                <img src="./medical-192.png" class="tool-logo"><div class="tool-info"><p class="tool-name">醫療理賠指引</p><p class="tool-desc">核心高端醫療理賠流程與程序備忘</p></div><span class="tool-arrow">›</span>
+            </a>
+            <hr style="border:0; height:1px; background:#ddd; margin: 15px 0;">
+        </div>
+        <div id="dynamicList">資料載入中...</div>
+    </div>
+</div>
+
+<div id="iosGuide" class="ios-guide-box">
+    💡 發現你正使用 iPhone/iPad 開啟！<br>
+    請點擊下方導航欄的 <span class="ios-icon-span">📤分享</span> 按鈕，<br>
+    然後向下捲動點擊「<span style="color:#007bff;">加至主畫面</span>」即可完成安裝！
 </div>
 
 <script>
-    // 密碼驗證與跳轉邏輯
-    function goToAdmin() {
-        if(prompt("🔑 請輸入管理員密碼：") === "Terra2026") {
-            window.location.href = "./admin.html"; // 密碼正確，自動跳轉去後台
-        } else {
-            alert("密碼錯誤，拒絕存取。");
-        }
-    }
+    function goToAdmin() { if(prompt("🔑 請輸入管理員密碼：") === "Terra2026") window.location.href = "./admin.html"; }
 </script>
 
 <script type="module">
@@ -96,9 +133,33 @@
         appId: "1:781876962987:web:33c1f7ae868fc3454779ee"
     });
     const db = getFirestore(app);
-
     let allDocs = [];
-    let currentTab = 'Memo';
+    let currentSection = 'Memo';
+
+    // 🆕 智能裝置檢測與提示引擎
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        document.getElementById('androidBanner').style.display = 'flex'; // 顯示 Android 安裝欄
+    });
+
+    window.triggerAndroidInstall = async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') { document.getElementById('androidBanner').style.display = 'none'; }
+            deferredPrompt = null;
+        }
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+        if (isIOS && !isStandalone) {
+            document.getElementById('iosGuide').style.display = 'block'; // 彈出 iOS 提示
+        }
+    });
 
     onSnapshot(query(collection(db, "data"), orderBy("createdAt", "desc")), (snapshot) => {
         allDocs = snapshot.docs.map(doc => doc.data());
@@ -110,20 +171,29 @@
         const monthSelect = document.getElementById('monthFilter');
         const currentSelection = monthSelect.value;
         const uniqueMonths = [...new Set(allDocs.map(doc => doc.uploadMonth).filter(m => m))].sort().reverse();
-        monthSelect.innerHTML = '<option value="">所有月份</option>';
+        monthSelect.innerHTML = '<option value="">所有月份搜尋</option>';
         uniqueMonths.forEach(m => monthSelect.innerHTML += `<option value="${m}">${m}</option>`);
         monthSelect.value = currentSelection;
     }
 
-    window.switchTab = function(tabName) {
-        currentTab = tabName;
-        document.querySelectorAll('.nav div').forEach(el => el.classList.toggle('active', el.innerText.includes(tabName) || (tabName === '銷售工具' && el.innerText.includes('工具'))));
-        document.getElementById('staticTools').style.display = (tabName === '銷售工具') ? 'block' : 'none';
-        document.getElementById('subCatFilter').style.display = (tabName === 'Memo') ? 'block' : 'none';
-        document.getElementById('filterArea').style.display = (tabName === '銷售工具') ? 'none' : 'flex';
-        document.getElementById('monthFilter').value = "";
-        document.getElementById('subCatFilter').value = "";
+    window.openSection = function(sectionName, displayName) {
+        currentSection = sectionName;
+        document.getElementById('dashboardView').style.display = 'none';
+        document.getElementById('pageView').style.display = 'block';
+        document.getElementById('backBtn').style.display = 'block';
+        document.getElementById('pageTitleDisplay').innerText = displayName;
+        document.getElementById('headerTitle').innerText = sectionName;
+        document.getElementById('staticTools').style.display = (sectionName === '銷售工具') ? 'flex' : 'none';
+        document.getElementById('subCatFilter').style.display = (sectionName === 'Memo') ? 'block' : 'none';
+        document.getElementById('filterArea').style.display = (sectionName === '銷售工具') ? 'none' : 'flex';
         renderList();
+    };
+
+    window.backToDashboard = function() {
+        document.getElementById('dashboardView').style.display = 'grid';
+        document.getElementById('pageView').style.display = 'none';
+        document.getElementById('backBtn').style.display = 'none';
+        document.getElementById('headerTitle').innerText = 'Terra資源系統';
     };
 
     window.renderList = function() {
@@ -131,26 +201,18 @@
         const mFilter = document.getElementById('monthFilter').value;
         const sFilter = document.getElementById('subCatFilter').value;
         listDiv.innerHTML = '';
-        
-        let filteredDocs = allDocs.filter(d => d.section === currentTab);
+        let filteredDocs = allDocs.filter(d => d.section === currentSection);
         if (mFilter) filteredDocs = filteredDocs.filter(d => d.uploadMonth === mFilter);
-        if (currentTab === 'Memo' && sFilter) filteredDocs = filteredDocs.filter(d => d.subCategory === sFilter);
+        if (currentSection === 'Memo' && sFilter) filteredDocs = filteredDocs.filter(d => d.subCategory === sFilter);
+        if(filteredDocs.length === 0) { listDiv.innerHTML = '<p style="text-align:center; color:#888; padding: 20px 0;">該項目暫無動態上載資料</p>'; return; }
         
-        if(filteredDocs.length === 0) { listDiv.innerHTML = '<p style="text-align:center; color:#888;">暫無資料</p>'; return; }
-
         const now = new Date();
         filteredDocs.forEach(data => {
             const isNew = data.createdAt && (now - data.createdAt.toDate()) < 604800000;
             const newBadge = isNew ? `<span class="new-badge">❗新更新</span>` : '';
-            const mTag = data.uploadMonth ? `<span>${data.uploadMonth}</span>` : '';
-            const sTag = data.subCategory ? `<span>${data.subCategory}</span>` : '';
-
             listDiv.innerHTML += `
                 <div class="card">
-                    <div class="card-info">
-                        <h4>${data.title} ${newBadge}</h4>
-                        <div>${mTag} ${sTag}</div>
-                    </div>
+                    <div class="card-info"><h4>${data.title} ${newBadge}</h4><div><span>${data.uploadMonth || ''}</span><span>${data.subCategory || ''}</span></div></div>
                     <a href="${data.url}" target="_blank" class="open-btn">開啟</a>
                 </div>`;
         });
@@ -160,9 +222,7 @@
         navigator.serviceWorker.register('./sw.js').then(reg => {
             reg.addEventListener('updatefound', () => {
                 const newWorker = reg.installing;
-                newWorker.addEventListener('statechange', () => {
-                    if (newWorker.state === 'activated') window.location.reload();
-                });
+                newWorker.addEventListener('statechange', () => { if (newWorker.state === 'activated') window.location.reload(); });
             });
         });
     }
