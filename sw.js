@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v1.8.5'; 
+const CACHE_VERSION = 'v1.8.6'; 
 const CACHE_NAME = `terra-cache-${CACHE_VERSION}`;
 const urlsToCache = [ './', './index.html', './manifest.json', './terra-192.png' ];
 
