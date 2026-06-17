@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terra資源系統 v1.8.5</title>
+    <title>Terra資源系統 v1.8.6</title>
     <link rel="manifest" href="./manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -23,7 +23,7 @@
 
         .container { padding: 20px; max-width: 800px; margin: 0 auto; }
         
-        /* 📱 主頁公事包排版 */
+        /* 主頁公事包排版 */
         .app-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 30px; }
         @media(min-width: 600px) { .app-grid { grid-template-columns: repeat(3, 1fr); } }
         .briefcase-card { background: white; border-radius: 16px; padding: 25px 15px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgba(0,0,0,0.03); }
@@ -44,7 +44,7 @@
         .new-badge { color: #dc3545; font-size: 11px; font-weight: bold; background: #ffeeba; padding: 2px 6px; border-radius: 4px; margin-left: 5px; animation: pulse 2s infinite; }
         .open-btn { background: var(--brand-color); color: white; border: none; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: bold; white-space: nowrap; box-shadow: 0 2px 6px rgba(13,27,42,0.2); }
 
-        /* 💼 銷售工具專屬獨立 Logo 排版 */
+        /* 銷售工具專屬獨立 Logo 排版 */
         .tools-list { display: flex; flex-direction: column; gap: 15px; margin-top: 10px; }
         .tool-item { background: white; padding: 15px; border-radius: 14px; display: flex; align-items: center; text-decoration: none; box-shadow: 0 4px 10px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.02); }
         .tool-logo { width: 45px; height: 45px; border-radius: 10px; margin-right: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); object-fit: cover; }
@@ -53,7 +53,7 @@
         .tool-desc { font-size: 12px; color: #777; margin: 0; }
         .tool-arrow { color: #ccc; font-size: 20px; font-weight: bold; margin-left: 10px; }
 
-        /* 🆕 自訂對話框 (Modal) 替代核突 Alert */
+        /* 自訂對話框 (Modal) */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; justify-content: center; align-items: center; }
         .modal-box { background: white; width: 80%; max-width: 320px; border-radius: 16px; padding: 25px 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2); animation: popIn 0.3s ease-out; }
         .modal-icon { font-size: 40px; margin-bottom: 10px; display: block; }
@@ -61,12 +61,13 @@
         .modal-btn { background: var(--brand-color); color: white; border: none; padding: 12px 30px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; }
         @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
-        /* iOS/Android 安裝引導 */
+        /* 安裝引導 */
         .android-install-banner { display: none; background: #28a745; color: white; padding: 12px 20px; font-weight: bold; font-size: 14px; justify-content: space-between; align-items: center; box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
         .android-btn { background: white; color: #28a745; border: none; padding: 6px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; }
         .ios-guide-box { display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: white; color: #333; padding: 15px; border-radius: 14px; box-shadow: 0 8px 30px rgba(0,0,0,0.2); width: 85%; max-width: 340px; text-align: center; font-size: 13px; font-weight: bold; border: 2px solid var(--brand-color); z-index: 9999; }
         .ios-guide-box::after { content: ''; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); border-width: 10px 10px 0; border-style: solid; border-color: white transparent; display: block; width: 0; }
         .ios-icon-span { font-size: 18px; vertical-align: middle; background: #eee; padding: 2px 6px; border-radius: 4px; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
@@ -83,11 +84,10 @@
     
     <button class="noti-btn" id="notiBtn" onclick="enableNotifications()">🔔 通知</button>
     
-    <span class="version-tag">v1.8.5</span>
+    <span class="version-tag">v1.8.6</span>
 </div>
 
 <div class="container">
-    
     <div id="dashboardView" class="app-grid">
         <div class="briefcase-card" onclick="openSection('Memo', '📝 Memo')"><span class="briefcase-icon">📝</span><span class="briefcase-title">Memo</span></div>
         <div class="briefcase-card" onclick="openSection('新聞', '📰 新聞')"><span class="briefcase-icon">📰</span><span class="briefcase-title">新聞通告</span></div>
@@ -99,31 +99,18 @@
 
     <div id="pageView" class="page-view">
         <div class="page-title" id="pageTitleDisplay">分類名稱</div>
-        
         <div class="filter-section" id="filterArea">
             <select id="monthFilter" onchange="renderList()"><option value="">所有月份搜尋</option></select>
             <select id="subCatFilter" onchange="renderList()" style="display: none;">
-                <option value="">所有副分類</option>
-                <option value="推廣優惠">推廣優惠</option>
-                <option value="公司獎賞">公司獎賞</option>
-                <option value="公司會議">公司會議</option>
-                <option value="產品更新資料">產品更新資料</option>
+                <option value="">所有副分類</option><option value="推廣優惠">推廣優惠</option><option value="公司獎賞">公司獎賞</option><option value="公司會議">公司會議</option><option value="產品更新資料">產品更新資料</option>
             </select>
         </div>
-
         <div id="staticTools" style="display: none;" class="tools-list">
-            <a href="https://ivancww.github.io/avawealth" target="_blank" class="tool-item">
-                <img src="./wealth-192.png" class="tool-logo"><div class="tool-info"><p class="tool-name">財富傳承系統</p><p class="tool-desc">資產傳承與信託規劃簡報 PWA 工具</p></div><span class="tool-arrow">›</span>
-            </a>
-            <a href="https://ivancww.github.io/CIApp" target="_blank" class="tool-item">
-                <img src="./CI-192.png" class="tool-logo"><div class="tool-info"><p class="tool-name">危疾計數機</p><p class="tool-desc">最新危疾保障保費及保額即時試算</p></div><span class="tool-arrow">›</span>
-            </a>
-            <a href="https://ivancww.github.io/medicalclaims" target="_blank" class="tool-item">
-                <img src="./medical-192.png" class="tool-logo"><div class="tool-info"><p class="tool-name">醫療理賠指引</p><p class="tool-desc">核心高端醫療理賠流程與程序備忘</p></div><span class="tool-arrow">›</span>
-            </a>
+            <a href="https://ivancww.github.io/avawealth" target="_blank" class="tool-item"><img src="./wealth-192.png" class="tool-logo"><div class="tool-info"><p class="tool-name">財富傳承系統</p><p class="tool-desc">資產傳承與信託規劃簡報 PWA 工具</p></div><span class="tool-arrow">›</span></a>
+            <a href="https://ivancww.github.io/CIApp" target="_blank" class="tool-item"><img src="./CI-192.png" class="tool-logo"><div class="tool-info"><p class="tool-name">危疾計數機</p><p class="tool-desc">最新危疾保障保費及保額即時試算</p></div><span class="tool-arrow">›</span></a>
+            <a href="https://ivancww.github.io/medicalclaims" target="_blank" class="tool-item"><img src="./medical-192.png" class="tool-logo"><div class="tool-info"><p class="tool-name">醫療理賠指引</p><p class="tool-desc">核心高端醫療理賠流程與程序備忘</p></div><span class="tool-arrow">›</span></a>
             <hr style="border:0; height:1px; background:#ddd; margin: 20px 0;">
         </div>
-
         <div id="dynamicList">資料載入中...</div>
     </div>
 </div>
@@ -136,20 +123,11 @@
     </div>
 </div>
 
-<div id="iosGuide" class="ios-guide-box">
-    💡 發現你正使用 iPad/iPhone 開啟！<br>
-    請點擊上方或下方導航欄的 <span class="ios-icon-span">📤分享</span> 按鈕，<br>
-    然後向下捲動點擊「<span style="color:#007bff;">加至主畫面</span>」即可完成安裝！
-</div>
+<div id="iosGuide" class="ios-guide-box">💡 發現你正使用 iPad/iPhone 開啟！<br>請點擊上方或下方導航欄的 <span class="ios-icon-span">📤分享</span> 按鈕，<br>然後向下捲動點擊「<span style="color:#007bff;">加至主畫面</span>」即可完成安裝！</div>
 
 <script>
     function goToAdmin() { if(prompt("🔑 請輸入管理員密碼：") === "Terra2026") { window.location.href = "./admin.html"; } }
-    
-    function showModal(icon, text) {
-        document.getElementById('modalIcon').innerText = icon;
-        document.getElementById('modalText').innerText = text;
-        document.getElementById('customModal').style.display = 'flex';
-    }
+    function showModal(icon, text) { document.getElementById('modalIcon').innerText = icon; document.getElementById('modalText').innerText = text; document.getElementById('customModal').style.display = 'flex'; }
     function closeModal() { document.getElementById('customModal').style.display = 'none'; }
 </script>
 
@@ -172,12 +150,33 @@
     let allDocs = [];
     let currentSection = 'Memo';
 
-    // 前景收到通知時使用自訂彈窗
-    onMessage(messaging, (payload) => {
-        showModal("🚨", `系統新消息：\n\n${payload.notification.title}\n${payload.notification.body}`);
+    onMessage(messaging, (payload) => { showModal("🚨", `系統新消息：\n\n${payload.notification.title}\n${payload.notification.body}`); });
+
+    // 🆕 檢查本地記憶體，如果之前成功過，開機自動認證，防止失憶
+    window.addEventListener('DOMContentLoaded', () => {
+        const notiBtn = document.getElementById('notiBtn');
+        if (localStorage.getItem('terra_noti_enabled') === 'true') {
+            notiBtn.innerText = "✅ 已開啟";
+            notiBtn.classList.add('success');
+            // 背景自動靜默向 Firebase 報到，更新 Token
+            silentRegisterToken();
+        }
     });
 
-    // 🔔 獲取使用者權限並儲存 Token
+    // 🆕 背景自動報到刷新 Token 引擎
+    async function silentRegisterToken() {
+        try {
+            let registration = await navigator.serviceWorker.getRegistration();
+            if (!registration) registration = await navigator.serviceWorker.register('./sw.js');
+            const token = await getToken(messaging, { 
+                vapidKey: 'BFXLE7KoKWIL459hYUUnQ7lqBu61pZjR780tWI2uEpICiv6Jg-rIokD8qt0tHzXYILgOGyc5J1BEmT_OpGjsgYg',
+                serviceWorkerRegistration: registration 
+            });
+            if (token) { await setDoc(doc(db, 'fcm_tokens', token), { token: token, createdAt: new Date() }); }
+        } catch (e) { console.log("Silent reg bypass"); }
+    }
+
+    // 🔔 手動獲取權限
     window.enableNotifications = async () => {
         const notiBtn = document.getElementById('notiBtn');
         if(notiBtn.classList.contains('success')) return showModal("✅", "你已經成功開啟通知，將會收到系統最新更新！");
@@ -191,9 +190,7 @@
             }
 
             const permission = await Notification.requestPermission();
-            if (permission !== 'granted') {
-                return showModal("❌", "你拒絕咗通知權限，或者系統環境不支援。\n請去系統設定允許通知。");
-            }
+            if (permission !== 'granted') { return showModal("❌", "你拒絕咗通知權限，或者系統環境不支援。\n請去手機系統設定允許通知。"); }
 
             notiBtn.innerText = "⏳ 處理中...";
             notiBtn.disabled = true;
@@ -208,6 +205,10 @@
 
             if (token) {
                 await setDoc(doc(db, 'fcm_tokens', token), { token: token, createdAt: new Date() });
+                
+                // 🆕 寫入永久記憶體
+                localStorage.setItem('terra_noti_enabled', 'true');
+                
                 showModal("✅", "成功開啟通知！你的裝置已加入接收名冊，將會收到系統最新更新。");
                 notiBtn.innerText = "✅ 已開啟";
                 notiBtn.classList.add('success');
@@ -217,13 +218,14 @@
             }
         } catch (error) {
             console.error(error);
-            showModal("❌", "連線失敗！\n錯誤原因：" + error.message + "\n\n建議：請確保使用 Chrome (Android) 瀏覽器，並將此 App 徹底關閉後重開。");
+            showModal("❌", "連線失敗！\n錯誤原因：" + error.message);
             notiBtn.innerText = "🔔 通知";
         } finally {
             notiBtn.disabled = false;
         }
     };
 
+    // 其他基礎 PWA 排版不變...
     let deferredPrompt;
     window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('androidBanner').style.display = 'flex'; });
     window.triggerAndroidInstall = async () => { if (deferredPrompt) { deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; if (outcome === 'accepted') document.getElementById('androidBanner').style.display = 'none'; deferredPrompt = null; } };
@@ -298,9 +300,7 @@
         navigator.serviceWorker.register('./sw.js').then(reg => {
             reg.addEventListener('updatefound', () => {
                 const newWorker = reg.installing;
-                newWorker.addEventListener('statechange', () => {
-                    if (newWorker.state === 'activated') window.location.reload();
-                });
+                newWorker.addEventListener('statechange', () => { if (newWorker.state === 'activated') window.location.reload(); });
             });
         });
     }
