@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>後台管理系統 v1.8.7</title>
+    <title>後台管理系統 v1.8.8</title>
     <style>
         :root { --brand-color: #0d1b2a; --bg-color: #f4f7f6; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg-color); margin: 0; padding-bottom: 50px; }
@@ -41,7 +41,7 @@
     <button class="back-btn" id="adminBackBtn" style="display:none;" onclick="backToAdminDashboard()">📁 控制台</button>
     <a href="./index.html" class="back-btn" id="exitAdminBtn">⬅️ 離開</a>
     <span id="adminHeaderTitle">後台管理控制台</span>
-    <span class="version-tag">v1.8.7</span>
+    <span class="version-tag">v1.8.8</span>
 </div>
 
 <div class="container">
@@ -62,7 +62,7 @@
     <div id="adminPanel" class="admin-panel">
         <div class="page-title" id="adminPageTitle">分類管理</div>
         <div class="admin-box">
-            <div class="admin-group"><label>文件主題 / 標題說明</label><input type="text" id="adminTitle" placeholder="請輸入主題名稱..."></div>
+            <div class="admin-group"><label>文件主題 / 標題說明</label><input type="text" id="adminTitle" placeholder="如留空將自動顯示為「最新資訊」"></div>
             <div class="admin-group" id="subCatBox" style="display: none;">
                 <label>Memo 專屬副分類</label>
                 <select id="adminSubCat"><option value="推廣優惠">推廣優惠</option><option value="公司獎賞">公司獎賞</option><option value="公司會議">公司會議</option><option value="產品更新資料">產品更新資料</option></select>
@@ -104,7 +104,7 @@
     let allData = [];
     let currentAdminSection = 'Memo';
 
-    // 🛑 記得將呢條 Link 換成你最新嗰條 GAS_URL
+    // 🛑 已經更新為你最新畀我嘅 GAS Link
     const GAS_URL = "https://script.google.com/macros/s/AKfycbzoa4HBh9fLLjyc4FX1Z6kdNQ_ipkZRtfhsrptU9K3_rmhRsIkt49JBMstPbfL73L5kSw/exec";
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -158,11 +158,12 @@
     }
 
     window.uploadData = async () => {
-        const title = document.getElementById('adminTitle').value.trim();
+        const titleInput = document.getElementById('adminTitle').value.trim();
         let url = document.getElementById('adminLink').value.trim();
         const file = document.getElementById('adminFile').files[0];
         
-        if(!title) return alert("請填寫主題標題！");
+        // 🛑 已經徹底移除「必須填寫主題」的 alert 阻擋，如果留空就自動變「最新資訊」
+        const finalTitle = titleInput || "最新資訊";
         
         document.getElementById('submitBtn').disabled = true;
         document.getElementById('loadingMsg').style.display = 'block';
@@ -177,10 +178,10 @@
             const uploadMonth = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, '0');
             const subCat = currentAdminSection === 'Memo' ? document.getElementById('adminSubCat').value : "";
             
-            await addDoc(collection(db, "data"), { title, section: currentAdminSection, subCategory: subCat, url, uploadMonth, createdAt: now });
+            await addDoc(collection(db, "data"), { title: finalTitle, section: currentAdminSection, subCategory: subCat, url, uploadMonth, createdAt: now });
             
-            const notiTitle = "🚨 Terra系統有新更新";
-            const notiBody = `【${currentAdminSection}】${title} 已經發佈！`;
+            const notiTitle = titleInput ? `【${currentAdminSection}】${titleInput}` : "🚨 Terra系統有新更新";
+            const notiBody = "管理員剛剛上載了新資訊，請即時查看！";
             const triggerUrl = `${GAS_URL}?action=send&title=${encodeURIComponent(notiTitle)}&body=${encodeURIComponent(notiBody)}`;
             
             fetch(triggerUrl, { mode: 'no-cors' }).catch(e => console.log("發射信號"));
