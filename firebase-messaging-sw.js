@@ -17,7 +17,7 @@ firebase.initializeApp({
   projectId: "terra-team",
   storageBucket: "terra-team.firebasestorage.app",
   messagingSenderId: "781876962987",
-   appId: "1:781876962987:web:33c1f7ae868fc3454779ee"
+  appId: "1:781876962987:web:33c1f7ae868fc3454779ee"
 });
 
 // 3. 啟動背景接收器
