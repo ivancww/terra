@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terra資源系統 v1.8.9</title>
+    <title>Terra資源系統 v1.9.0</title>
     <link rel="manifest" href="./manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -15,8 +15,6 @@
         .header { background: var(--brand-color); color: white; padding: 18px; text-align: center; font-weight: bold; font-size: 1.2em; position: relative; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
         .header img { width: 28px; height: 28px; margin-right: 10px; border-radius: 4px; cursor: pointer; }
         .version-tag { font-size: 11px; background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px; position: absolute; right: 15px; }
-        .noti-btn { position: absolute; right: 65px; background: #ffc107; color: #333; border: none; padding: 5px 10px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: all 0.3s; }
-        .noti-btn.success { background: #28a745; color: white; }
         .back-btn { display: none; background: rgba(255,255,255,0.2); color: white; border: none; padding: 6px 12px; border-radius: 4px; position: absolute; left: 15px; cursor: pointer; font-size: 13px; font-weight: bold; }
         .container { padding: 20px; max-width: 800px; margin: 0 auto; }
         
@@ -30,7 +28,6 @@
         
         /* 🆕 主頁專屬閃爍紅點標籤 */
         .dash-badge { color: #dc3545; font-size: 11px; font-weight: bold; background: #ffeeba; padding: 1px 5px; border-radius: 4px; display: none; animation: pulse 2s infinite; }
-        
         .page-view { display: none; }
         .page-title { font-size: 20px; font-weight: bold; color: var(--brand-color); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--brand-color); padding-bottom: 8px; }
         .filter-section { display: flex; gap: 10px; margin-bottom: 15px; }
@@ -52,24 +49,17 @@
         .modal-icon { font-size: 40px; margin-bottom: 10px; display: block; }
         .modal-text { font-size: 15px; color: #333; margin-bottom: 25px; line-height: 1.5; white-space: pre-line; word-break: break-word; }
         .modal-btn { background: var(--brand-color); color: white; border: none; padding: 12px 30px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; }
-        .android-install-banner { display: none; background: #28a745; color: white; padding: 12px 20px; font-weight: bold; font-size: 14px; justify-content: space-between; align-items: center; box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
-        .android-btn { background: white; color: #28a745; border: none; padding: 6px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .ios-guide-box { display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: white; color: #333; padding: 15px; border-radius: 14px; box-shadow: 0 8px 30px rgba(0,0,0,0.2); width: 85%; max-width: 340px; text-align: center; font-size: 13px; font-weight: bold; border: 2px solid var(--brand-color); z-index: 9999; }
-        .ios-guide-box::after { content: ''; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); border-width: 10px 10px 0; border-style: solid; border-color: white transparent; display: block; width: 0; }
-        .ios-icon-span { font-size: 18px; vertical-align: middle; background: #eee; padding: 2px 6px; border-radius: 4px; }
+        
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
 
-<div id="androidBanner" class="android-install-banner"><span>📥 撳此將系統安裝至手機桌面</span><button class="android-btn" onclick="triggerAndroidInstall()">即刻安裝</button></div>
-
 <div class="header">
     <button class="back-btn" id="backBtn" onclick="backToDashboard()">⬅️ 主頁</button>
     <img src="./terra-192.png" alt="Logo" onclick="goToAdmin()">
     <span id="headerTitle">Terra資源系統</span>
-    <button class="noti-btn" id="notiBtn" onclick="enableNotifications()">🔔 通知</button>
-    <span class="version-tag">v1.8.9</span>
+    <span class="version-tag">v1.9.0</span>
 </div>
 
 <div class="container">
@@ -108,7 +98,16 @@
     </div>
 </div>
 
-<div id="iosGuide" class="ios-guide-box">💡 發現你正使用 iPad/iPhone 開啟！<br>請點擊上方或下方導航欄的 <span class="ios-icon-span">📤分享</span> 按鈕，<br>然後向下捲動點擊「<span style="color:#007bff;">加至主畫面</span>」即可完成安裝！</div>
+<div id="install-prompt-banner" style="display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: #ffffff; padding: 15px; box-shadow: 0 -4px 15px rgba(0,0,0,0.1); z-index: 9999; text-align: center; border-top-left-radius: 15px; border-top-right-radius: 15px; box-sizing: border-box;">
+    <div style="width: 40px; height: 5px; background: #ddd; border-radius: 3px; margin: 0 auto 10px auto;"></div>
+    <p style="margin: 0 0 15px 0; font-size: 15px; color: #333; line-height: 1.5;" id="install-text"></p>
+    <button id="install-btn" style="display:none; background: #007AFF; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 10px;">
+        立即安裝 App
+    </button>
+    <button id="close-prompt-btn" style="background: #f0f0f0; color: #555; border: none; padding: 10px; border-radius: 10px; font-size: 14px; cursor: pointer; width: 100%;">
+        稍後再說
+    </button>
+</div>
 
 <script>
     function goToAdmin() { if(prompt("🔑 請輸入管理員密碼：") === "Terra2026") { window.location.href = "./admin.html"; } }
@@ -119,92 +118,27 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { getFirestore, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-    import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-messaging.js";
 
     const app = initializeApp({
         apiKey: "AIzaSyCUUqWRecCdnKB7ReNLuSoiDZEs7q9oSJ4",
         authDomain: "terra-team.firebaseapp.com",
         projectId: "terra-team",
         storageBucket: "terra-team.firebasestorage.app",
-        messagingSenderId: "781876962987",
         appId: "1:781876962987:web:33c1f7ae868fc3454779ee"
     });
-    
+
     const db = getFirestore(app);
-    const messaging = getMessaging(app);
     let allDocs = [];
     let currentSection = 'Memo';
-
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbzoa4HBh9fLLjyc4FX1Z6kdNQ_ipkZRtfhsrptU9K3_rmhRsIkt49JBMstPbfL73L5kSw/exec";
-
-    onMessage(messaging, (payload) => { showModal("🚨", `系統新消息：\n\n${payload.notification.title}\n${payload.notification.body}`); });
-
-    window.addEventListener('DOMContentLoaded', () => {
-        const notiBtn = document.getElementById('notiBtn');
-        if (localStorage.getItem('terra_noti_enabled') === 'true') {
-            notiBtn.innerText = "✅ 已開啟";
-            notiBtn.classList.add('success');
-            silentRegisterToken();
-        }
-    });
-
-    async function silentRegisterToken() {
-        try {
-            let registration = await navigator.serviceWorker.getRegistration();
-            if (!registration) registration = await navigator.serviceWorker.register('./sw.js');
-            const token = await getToken(messaging, { vapidKey: 'BFXLE7KoKWIL459hYUUnQ7lqBu61pZjR780tWI2uEpICiv6Jg-rIokD8qt0tHzXYILgOGyc5J1BEmT_OpGjsgYg', serviceWorkerRegistration: registration });
-            if (token) { fetch(`${GAS_URL}?action=register&token=${encodeURIComponent(token)}`, { mode: 'no-cors' }); }
-        } catch (e) {}
-    }
-
-    window.enableNotifications = async () => {
-        const notiBtn = document.getElementById('notiBtn');
-        if(notiBtn.classList.contains('success')) return showModal("✅", "你已經成功開啟通知，將會收到系統最新更新！");
-
-        try {
-            const isIOS = (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) && !window.MSStream;
-            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
-
-            if (isIOS && !isStandalone) { return showModal("🍎", "Apple 系統嚴格限制：\n\n請先依照畫面底部指示，將系統「加至主畫面」，然後從桌面打開 App，才能成功開啟通知！"); }
-
-            const permission = await Notification.requestPermission();
-            if (permission !== 'granted') { return showModal("❌", "你拒絕咗通知權限，請去手機系統設定允許通知。"); }
-
-            notiBtn.innerText = "⏳ 處理中...";
-            notiBtn.disabled = true;
-
-            let registration = await navigator.serviceWorker.getRegistration();
-            if (!registration) registration = await navigator.serviceWorker.register('./sw.js');
-
-            const token = await getToken(messaging, { vapidKey: 'BFXLE7KoKWIL459hYUUnQ7lqBu61pZjR780tWI2uEpICiv6Jg-rIokD8qt0tHzXYILgOGyc5J1BEmT_OpGjsgYg', serviceWorkerRegistration: registration });
-
-            if (token) {
-                await fetch(`${GAS_URL}?action=register&token=${encodeURIComponent(token)}`, { mode: 'no-cors' });
-                localStorage.setItem('terra_noti_enabled', 'true');
-                showModal("✅", "成功開啟通知！你的裝置已加入接收名冊，將會收到系統最新更新。");
-                notiBtn.innerText = "✅ 已開啟";
-                notiBtn.classList.add('success');
-            } else {
-                showModal("⚠️", "無法獲取驗證碼，請確保使用手機桌面 App 重試。");
-                notiBtn.innerText = "🔔 通知";
-            }
-        } catch (error) {
-            showModal("❌", "連線失敗！\n錯誤原因：" + error.message);
-            notiBtn.innerText = "🔔 通知";
-        } finally {
-            notiBtn.disabled = false;
-        }
-    };
 
     // 實時讀取 Firestore 並全自動觸發前台所有提示
     onSnapshot(query(collection(db, "data"), orderBy("createdAt", "desc")), (snapshot) => {
         allDocs = snapshot.docs.map(doc => doc.data());
         updateMonthFilterOptions();
         renderList();
-        updateDashboardBadges(); // 🆕 實時連動主頁九宮格紅點提示
+        updateDashboardBadges(); 
     });
 
-    // 🆕 智能檢查邊個九宮格分類有 7 日內嘅新上載，全自動亮起紅點
     function updateDashboardBadges() {
         const sections = ['Memo', '新聞', '分享', '區會議', '區活動', '銷售工具'];
         const now = new Date();
@@ -262,9 +196,15 @@
         const sFilter = document.getElementById('subCatFilter').value;
         listDiv.innerHTML = '';
         let filteredDocs = allDocs.filter(d => d.section === currentSection);
+
         if (mFilter) filteredDocs = filteredDocs.filter(d => d.uploadMonth === mFilter);
         if (currentSection === 'Memo' && sFilter) filteredDocs = filteredDocs.filter(d => d.subCategory === sFilter);
-        if(filteredDocs.length === 0) { listDiv.innerHTML = '<p style="text-align:center; color:#888; padding: 20px 0;">該項目暫無動態上載資料</p>'; return; }
+
+        if(filteredDocs.length === 0) { 
+            listDiv.innerHTML = '<p style="text-align:center; color:#888; padding: 20px 0;">該項目暫無動態上載資料</p>'; 
+            return;
+        }
+
         const now = new Date();
         filteredDocs.forEach(data => {
             const isNew = data.createdAt && (now - data.createdAt.toDate()) < 604800000;
@@ -283,6 +223,50 @@
             });
         });
     }
+
+    // ==========================================
+    // PWA 安裝提示邏輯 (iOS 教學 / Android 自動安裝)
+    // ==========================================
+    document.addEventListener('DOMContentLoaded', () => {
+        const installBanner = document.getElementById('install-prompt-banner');
+        const installText = document.getElementById('install-text');
+        const installBtn = document.getElementById('install-btn');
+        const closeBtn = document.getElementById('close-prompt-btn');
+        
+        let deferredPrompt;
+
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => { 
+                installBanner.style.display = 'none'; 
+            });
+        }
+
+        if (!isStandalone) {
+            if (isIOS) {
+                installText.innerHTML = '💡 <b>安裝至主畫面以獲取最佳體驗</b><br><br>1. 點擊瀏覽器下方的 <b>[分享]</b> 圖示<br>2. 選擇 <b>[加入主畫面]</b> 即可輕鬆安裝';
+                installBanner.style.display = 'block';
+            } else {
+                window.addEventListener('beforeinstallprompt', (e) => {
+                    e.preventDefault(); 
+                    deferredPrompt = e; 
+                    
+                    installText.innerHTML = '💡 <b>將系統安裝至手機</b><br>體驗更流暢的操作速度及全螢幕模式。';
+                    installBtn.style.display = 'block';
+                    installBanner.style.display = 'block';
+
+                    installBtn.addEventListener('click', async () => {
+                        installBanner.style.display = 'none';
+                        deferredPrompt.prompt(); 
+                        await deferredPrompt.userChoice;
+                        deferredPrompt = null;
+                    });
+                });
+            }
+        }
+    });
 </script>
 </body>
 </html>
