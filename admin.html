@@ -3,134 +3,161 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>管理員發佈系統</title>
+    <title>後台管理 v1.5.0</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f7f6; }
-        .form-container { max-width: 500px; margin: 30px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #333; }
-        .form-group input, .form-group select { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
-        button { width: 100%; padding: 12px; background-color: #007bff; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        button:hover { background-color: #0056b3; }
-        button:disabled { background-color: #cccccc; cursor: not-allowed; }
-        #loadingMsg { text-align: center; color: #ff9900; font-weight: bold; margin-top: 10px; display: none; }
+        /* 內嵌樣式表 */
+        :root { --brand-color: #0d1b2a; --bg-color: #f4f7f6; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg-color); margin: 0; padding-bottom: 50px; }
+        .header { background: var(--brand-color); color: white; padding: 15px; text-align: center; font-weight: bold; font-size: 1.2em; position: relative; }
+        .version-tag { font-size: 11px; background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px; position: absolute; right: 15px; top: 18px; }
+        .content-area { padding: 15px; }
+        .admin-box { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .admin-group { margin-bottom: 15px; }
+        .admin-group label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; }
+        .admin-group input[type="text"], .admin-group select, .admin-group input[type="file"] { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+        .submit-btn { width: 100%; padding: 12px; background: #28a745; color: white; font-weight: bold; font-size: 16px; border: none; border-radius: 4px; cursor: pointer; }
+        .submit-btn:disabled { background: #ccc; }
+        .card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--brand-color); }
+        .card-info h4 { margin: 0 0 5px 0; font-size: 15px; }
+        .card-info span { font-size: 12px; color: #666; }
+        .del-btn { background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 13px; font-weight: bold; }
+        .filter-section { display: flex; gap: 10px; }
+        .filter-section select { flex: 1; padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 14px; }
+        .back-btn { background: #6c757d; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; position: absolute; left: 15px; top: 15px; text-decoration: none; font-size: 12px; }
     </style>
 </head>
 <body>
 
-<div class="form-container">
-    <h2 style="text-align: center; color: #007bff;">系統資料發佈</h2>
-    
-    <div class="form-group">
-        <label>文件/新聞標題</label>
-        <input type="text" id="fileTitle" placeholder="輸入標題...">
-    </div>
-    
-    <div class="form-group">
-        <label>主分類</label>
-        <select id="mainSection" onchange="toggleSubCategory()">
-            <option value="Memo">Memo</option>
-            <option value="同事分享">同事分享</option>
-            <option value="新聞">新聞 (可只入連結自動跳轉)</option>
-            <option value="團隊培訓及會議記錄">團隊培訓及會議記錄</option>
-            <option value="銷售工具">銷售工具</option>
-        </select>
-    </div>
-    
-    <div class="form-group" id="subCategoryGroup">
-        <label>Memo 副分類</label>
-        <select id="subCategory">
-            <option value="推廣優惠">推廣優惠</option>
-            <option value="公司獎賞">公司獎賞</option>
-            <option value="公司會議">公司會議</option>
-            <option value="產品更新資料">產品更新資料</option>
-        </select>
-    </div>
-
-    <div class="form-group">
-        <label>外部連結 (適用於新聞自動跳轉)</label>
-        <input type="url" id="externalLink" placeholder="例如: https://yahoo.com">
-    </div>
-    
-    <div class="form-group">
-        <label>上載檔案 (如只有外部連結可留空)</label>
-        <input type="file" id="fileUpload">
-    </div>
-    
-    <button id="uploadBtn">即時發佈</button>
-    <div id="loadingMsg">資料處理中，請稍候...</div>
+<div class="header">
+    <a href="./index.html" class="back-btn">⬅️ 返回前台</a>
+    後台管理系統
+    <span class="version-tag">v1.5.0</span>
 </div>
 
-<script>
-    function toggleSubCategory() {
-        const mainSection = document.getElementById('mainSection').value;
-        document.getElementById('subCategoryGroup').style.display = mainSection === 'Memo' ? 'block' : 'none';
-    }
-</script>
+<div class="content-area">
+    <div class="admin-box">
+        <h3 style="margin-top:0; color:var(--brand-color);">新增資料</h3>
+        <div class="admin-group"><label>文件主題 / 標題</label><input type="text" id="adminTitle" placeholder="輸入標題"></div>
+        
+        <div class="admin-group">
+            <label>選擇分類</label>
+            <select id="adminSection" onchange="toggleSub()">
+                <option value="Memo">📝 Memo</option><option value="新聞">📰 新聞</option><option value="分享">🗣️ 分享</option>
+                <option value="區會議">🗓️ 區會議</option><option value="區活動">🎉 區活動</option><option value="銷售工具">💼 銷售工具</option>
+            </select>
+        </div>
+        
+        <div class="admin-group" id="subCatBox"><label>Memo 副分類</label>
+            <select id="adminSubCat">
+                <option value="推廣優惠">推廣優惠</option><option value="公司獎賞">公司獎賞</option>
+                <option value="公司會議">公司會議</option><option value="產品更新資料">產品更新資料</option>
+            </select>
+        </div>
+
+        <div class="admin-group"><label>上載 PDF 檔案</label><input type="file" id="adminFile"></div>
+        <div class="admin-group" style="text-align:center; font-weight:bold;">--- 或 ---</div>
+        <div class="admin-group"><label>輸入 Google Drive 或 外部連結</label><input type="text" id="adminLink" placeholder="https://..."></div>
+        
+        <button class="submit-btn" id="submitBtn" onclick="uploadData()">確認發佈</button>
+        <p id="loadingMsg" style="display:none; text-align:center; color:#ff9900;">資料處理中，請稍候...</p>
+    </div>
+
+    <div class="admin-box">
+        <h3 style="margin-top:0; color:#dc3545;">管理及刪除資料</h3>
+        <div class="filter-section">
+            <select id="delMonthFilter"><option value="">選擇要整月刪除的月份...</option></select>
+            <button class="del-btn" onclick="deleteWholeMonth()">🗑️ 刪除整月</button>
+        </div>
+        <hr style="border:0; height:1px; background:#ddd; margin: 15px 0;">
+        <div id="adminList">資料載入中...</div>
+    </div>
+</div>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
-    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-storage.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getFirestore, collection, query, orderBy, onSnapshot, addDoc, deleteDoc, doc, getDocs, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
 
-    const firebaseConfig = {
+    const app = initializeApp({
         apiKey: "AIzaSyCUUqWRecCdnKB7ReNLuSoiDZEs7q9oSJ4",
         authDomain: "terra-team.firebaseapp.com",
         projectId: "terra-team",
         storageBucket: "terra-team.firebasestorage.app",
         messagingSenderId: "781876962987",
         appId: "1:781876962987:web:33c1f7ae868fc3454779ee"
-    };
-
-    const app = initializeApp(firebaseConfig);
+    });
     const db = getFirestore(app);
     const storage = getStorage(app);
+    let allData = [];
 
-    document.getElementById('uploadBtn').addEventListener('click', async () => {
-        const title = document.getElementById('fileTitle').value.trim();
-        const mainSection = document.getElementById('mainSection').value;
-        const subCategory = mainSection === 'Memo' ? document.getElementById('subCategory').value : "";
-        const externalLink = document.getElementById('externalLink').value.trim();
-        const fileInput = document.getElementById('fileUpload');
-        const file = fileInput.files[0];
+    window.toggleSub = () => document.getElementById('subCatBox').style.display = (document.getElementById('adminSection').value === 'Memo') ? 'block' : 'none';
+
+    onSnapshot(query(collection(db, "data"), orderBy("createdAt", "desc")), (snap) => {
+        allData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const list = document.getElementById('adminList');
+        const monthSelect = document.getElementById('delMonthFilter');
+        list.innerHTML = '';
         
-        if(!title) { alert('請填寫標題！'); return; }
-        if(!file && !externalLink) { alert('請選擇檔案上載或輸入外部連結！'); return; }
+        const uniqueMonths = [...new Set(allData.map(d => d.uploadMonth).filter(m => m))].sort().reverse();
+        monthSelect.innerHTML = '<option value="">選擇要刪除的月份...</option>';
+        uniqueMonths.forEach(m => monthSelect.innerHTML += `<option value="${m}">${m}</option>`);
 
-        document.getElementById('uploadBtn').disabled = true;
+        allData.forEach(data => {
+            list.innerHTML += `
+                <div class="card">
+                    <div class="card-info">
+                        <h4>[${data.section}] ${data.title}</h4>
+                        <span>${data.uploadMonth || '無月份'}</span>
+                    </div>
+                    <button class="del-btn" onclick="delSingle('${data.id}')">刪除</button>
+                </div>`;
+        });
+    });
+
+    window.uploadData = async () => {
+        const title = document.getElementById('adminTitle').value;
+        const section = document.getElementById('adminSection').value;
+        const subCat = section === 'Memo' ? document.getElementById('adminSubCat').value : "";
+        let url = document.getElementById('adminLink').value;
+        const file = document.getElementById('adminFile').files[0];
+
+        if(!title || (!file && !url)) return alert("請填寫標題，並選擇檔案或輸入連結！");
+
+        document.getElementById('submitBtn').disabled = true;
         document.getElementById('loadingMsg').style.display = 'block';
 
         try {
-            let downloadURL = "";
-            if (file) {
-                const storageRef = ref(storage, 'team_files/' + Date.now() + "_" + file.name);
+            if(file) {
+                const storageRef = ref(storage, 'files/' + Date.now() + '_' + file.name);
                 await uploadBytes(storageRef, file);
-                downloadURL = await getDownloadURL(storageRef);
+                url = await getDownloadURL(storageRef);
             }
+            const now = new Date();
+            const uploadMonth = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, '0');
 
-            const today = new Date();
-            const uploadMonth = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, '0');
-
-            await addDoc(collection(db, "team_documents"), {
-                title: title,
-                mainSection: mainSection,
-                subCategory: subCategory,
-                fileUrl: downloadURL,
-                externalLink: externalLink,
-                uploadMonth: uploadMonth,
-                createdAt: today
-            });
-
-            alert('🎉 發佈成功！');
+            await addDoc(collection(db, "data"), { title, section, subCategory: subCat, url, uploadMonth, createdAt: now });
+            alert("✅ 發佈成功！");
             location.reload();
-        } catch (error) {
-            console.error("發佈錯誤: ", error);
-            alert('發佈失敗，請檢查權限或網絡。');
-        } finally {
-            document.getElementById('uploadBtn').disabled = false;
-            document.getElementById('loadingMsg').style.display = 'none';
+        } catch (e) {
+            alert("發佈失敗"); console.error(e);
+            document.getElementById('submitBtn').disabled = false;
         }
-    });
+    };
+
+    window.delSingle = async (id) => {
+        if(confirm("確定要刪除這份檔案嗎？刪除後無法復原。")) await deleteDoc(doc(db, "data", id));
+    };
+
+    window.deleteWholeMonth = async () => {
+        const month = document.getElementById('delMonthFilter').value;
+        if(!month) return alert("請先選擇要刪除的月份！");
+        if(confirm(`⚠️ 警告！確定要刪除 ${month} 的「所有資料」嗎？`)) {
+            const q = query(collection(db, "data"), where("uploadMonth", "==", month));
+            const querySnapshot = await getDocs(q);
+            querySnapshot.forEach(async (d) => await deleteDoc(doc(db, "data", d.id)));
+            alert(`${month} 資料已全部清空！`);
+        }
+    };
 </script>
 </body>
 </html>
