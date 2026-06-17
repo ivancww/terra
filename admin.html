@@ -31,8 +31,6 @@
         .del-btn { background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 13px; font-weight: bold; }
         .filter-section { display: flex; gap: 10px; margin-bottom: 15px; }
         .filter-section select { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #ccc; }
-        
-        /* QR Code 專屬樣式 */
         .qrcode-box { background: white; padding: 20px; border-radius: 14px; text-align: center; margin-top: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); border: 2px solid #28a745; }
         .qrcode-img { width: 160px; height: 160px; margin: 15px auto; display: block; }
     </style>
@@ -47,37 +45,18 @@
 </div>
 
 <div class="container">
-
     <div id="adminDashboardView" class="app-grid">
-        <div class="briefcase-card" onclick="openAdminSection('Memo', '📝 Memo 管理後台')">
-            <span class="briefcase-icon">📝</span>
-            <span class="briefcase-title">Memo</span>
-        </div>
-        <div class="briefcase-card" onclick="openAdminSection('新聞', '📰 新聞 管理後台')">
-            <span class="briefcase-icon">📰</span>
-            <span class="briefcase-title">新聞通告</span>
-        </div>
-        <div class="briefcase-card" onclick="openAdminSection('分享', '🗣️ 分享 管理後台')">
-            <span class="briefcase-icon">🗣️</span>
-            <span class="briefcase-title">同事分享</span>
-        </div>
-        <div class="briefcase-card" onclick="openAdminSection('區會議', '🗓️ 區會議 管理後台')">
-            <span class="briefcase-icon">🗓️</span>
-            <span class="briefcase-title">區會議記錄</span>
-        </div>
-        <div class="briefcase-card" onclick="openAdminSection('區活動', '🎉 區活動 管理後台')">
-            <span class="briefcase-icon">🎉</span>
-            <span class="briefcase-title">區活動花絮</span>
-        </div>
-        <div class="briefcase-card" onclick="openAdminSection('銷售工具', '💼 銷售工具 管理後台')">
-            <span class="briefcase-icon">💼</span>
-            <span class="briefcase-title">銷售工具連結</span>
-        </div>
+        <div class="briefcase-card" onclick="openAdminSection('Memo', '📝 Memo 管理後台')"><span class="briefcase-icon">📝</span><span class="briefcase-title">Memo</span></div>
+        <div class="briefcase-card" onclick="openAdminSection('新聞', '📰 新聞 管理後台')"><span class="briefcase-icon">📰</span><span class="briefcase-title">新聞通告</span></div>
+        <div class="briefcase-card" onclick="openAdminSection('分享', '🗣️ 分享 管理後台')"><span class="briefcase-icon">🗣️</span><span class="briefcase-title">同事分享</span></div>
+        <div class="briefcase-card" onclick="openAdminSection('區會議', '🗓️ 區會議 管理後台')"><span class="briefcase-icon">🗓️</span><span class="briefcase-title">區會議記錄</span></div>
+        <div class="briefcase-card" onclick="openAdminSection('區活動', '🎉 區活動 管理後台')"><span class="briefcase-icon">🎉</span><span class="briefcase-title">區活動花絮</span></div>
+        <div class="briefcase-card" onclick="openAdminSection('銷售工具', '💼 銷售工具 管理後台')"><span class="briefcase-icon">💼</span><span class="briefcase-title">銷售工具連結</span></div>
     </div>
 
     <div id="qrcodeSection" class="qrcode-box">
         <h3 style="margin:0; color:#28a745;">🤝 新同事快速加入通道</h3>
-        <p style="margin: 5px 0 0 0; font-size:13px; color:#666;">等新同事用手機/iPad直接掃描下面 QR Code，即可開啟並即時安裝系統到桌面：</p>
+        <p style="margin: 5px 0 0 0; font-size:13px; color:#666;">掃描 QR Code 即可開啟系統並安裝：</p>
         <img id="qrCodeImg" class="qrcode-img" src="" alt="QR Code 載入中...">
     </div>
 
@@ -87,14 +66,11 @@
             <div class="admin-group"><label>文件主題 / 標題說明</label><input type="text" id="adminTitle" placeholder="請輸入主題名稱..."></div>
             <div class="admin-group" id="subCatBox" style="display: none;">
                 <label>Memo 專屬副分類</label>
-                <select id="adminSubCat">
-                    <option value="推廣優惠">推廣優惠</option><option value="公司獎賞">公司獎賞</option>
-                    <option value="公司會議">公司會議</option><option value="產品更新資料">產品更新資料</option>
-                </select>
+                <select id="adminSubCat"><option value="推廣優惠">推廣優惠</option><option value="公司獎賞">公司獎賞</option><option value="公司會議">公司會議</option><option value="產品更新資料">產品更新資料</option></select>
             </div>
             <div class="admin-group"><label>直接選擇實體 PDF 檔案上載</label><input type="file" id="adminFile"></div>
-            <div class="admin-group" style="text-align:center; font-weight:bold; color:#777; font-size:12px;">─── 或者（適用於 Google Drive 路徑） ───</div>
-            <div class="admin-group"><label>貼上 Google Drive 分享網址或外部連結</label><input type="text" id="adminLink" placeholder="https://drive.google.com/..."></div>
+            <div class="admin-group" style="text-align:center; font-weight:bold; color:#777; font-size:12px;">─── 或者 ───</div>
+            <div class="admin-group"><label>貼上 Google Drive 或 外部連結</label><input type="text" id="adminLink" placeholder="https://..."></div>
             <button class="submit-btn" id="submitBtn" onclick="uploadData()">發佈到此分類</button>
             <p id="loadingMsg" style="display:none; text-align:center; color:#ff9900; font-weight:bold;">檔案及路徑上載中...</p>
         </div>
@@ -129,7 +105,6 @@
     let allData = [];
     let currentAdminSection = 'Memo';
 
-    // 🆕 智能動態生成前台 QR Code 機制
     window.addEventListener('DOMContentLoaded', () => {
         const frontendUrl = window.location.href.replace('admin.html', 'index.html');
         document.getElementById('qrCodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(frontendUrl)}`;
@@ -143,19 +118,22 @@
     window.openAdminSection = function(sectionName, displayName) {
         currentAdminSection = sectionName;
         document.getElementById('adminDashboardView').style.display = 'none';
-        document.getElementById('qrcodeSection').style.display = 'none'; // 隱藏二維碼
+        document.getElementById('qrcodeSection').style.display = 'none';
         document.getElementById('exitAdminBtn').style.display = 'none';
         document.getElementById('adminPanel').style.display = 'block';
         document.getElementById('adminBackBtn').style.display = 'block';
         document.getElementById('adminPageTitle').innerText = displayName;
         document.getElementById('adminHeaderTitle').innerText = sectionName + '管理';
         document.getElementById('subCatBox').style.display = (sectionName === 'Memo') ? 'block' : 'none';
+        document.getElementById('adminTitle').value = '';
+        document.getElementById('adminFile').value = '';
+        document.getElementById('adminLink').value = '';
         renderAdminList();
     };
 
     window.backToAdminDashboard = function() {
         document.getElementById('adminDashboardView').style.display = 'grid';
-        document.getElementById('qrcodeSection').style.display = 'block'; // 重新顯示二維碼
+        document.getElementById('qrcodeSection').style.display = 'block';
         document.getElementById('exitAdminBtn').style.display = 'block';
         document.getElementById('adminPanel').style.display = 'none';
         document.getElementById('adminBackBtn').style.display = 'none';
@@ -172,7 +150,7 @@
         uniqueMonths.forEach(m => monthSelect.innerHTML += `<option value="${m}">${m}</option>`);
 
         if(filtered.length === 0) {
-            list.innerHTML = '<p style="text-align:center; color:#888; font-size:13px;">當前公事包分類下無任何上載記錄</p>';
+            list.innerHTML = '<p style="text-align:center; color:#888; font-size:13px;">當前分類下無上載記錄</p>';
             return;
         }
         filtered.forEach(data => {
@@ -188,9 +166,12 @@
         const title = document.getElementById('adminTitle').value.trim();
         let url = document.getElementById('adminLink').value.trim();
         const file = document.getElementById('adminFile').files[0];
-        if(!title || (!file && !url)) return alert("請填寫主題標題，並必須選擇一個 PDF 檔案或填入 Google Drive 共享路徑網址！");
+        
+        if(!title || (!file && !url)) return alert("請填寫標題，並選擇 PDF 或填寫連結！");
+        
         document.getElementById('submitBtn').disabled = true;
         document.getElementById('loadingMsg').style.display = 'block';
+        
         try {
             if(file) {
                 const storageRef = ref(storage, 'files/' + Date.now() + '_' + file.name);
@@ -200,16 +181,32 @@
             const now = new Date();
             const uploadMonth = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, '0');
             const subCat = currentAdminSection === 'Memo' ? document.getElementById('adminSubCat').value : "";
+            
+            // 寫入 Firestore 資料庫
             await addDoc(collection(db, "data"), { title, section: currentAdminSection, subCategory: subCat, url, uploadMonth, createdAt: now });
-            alert("✅ 成功發佈！");
+            
+            // --- 觸發你專屬的 GAS 進行全自動推播通知 ---
+            const gasWebhookUrl = "https://script.google.com/macros/s/AKfycbyGVCosSDWSswmM7e3QwxFvm2gwjYyCpB3A8Uh57aWp_sfR4nMI0d8qQRn8f6zD7Mp0/exec";
+            const notiTitle = "🚨 Terra系統有新更新";
+            const notiBody = `【${currentAdminSection}】${title} 已經發佈！`;
+            const triggerUrl = `${gasWebhookUrl}?title=${encodeURIComponent(notiTitle)}&body=${encodeURIComponent(notiBody)}`;
+            
+            fetch(triggerUrl, { mode: 'no-cors' }).catch(e => console.log("發射信號完成"));
+            // --- 觸發結束 ---
+
+            alert("✅ 成功發佈！全團隊已自動收到通知。");
             document.getElementById('adminTitle').value = '';
             document.getElementById('adminFile').value = '';
             document.getElementById('adminLink').value = '';
-        } catch (e) { alert("發佈失敗"); }
-        finally { document.getElementById('submitBtn').disabled = false; document.getElementById('loadingMsg').style.display = 'none'; }
+        } catch (e) { 
+            alert("發佈失敗"); 
+        } finally { 
+            document.getElementById('submitBtn').disabled = false; 
+            document.getElementById('loadingMsg').style.display = 'none'; 
+        }
     };
 
-    window.delSingle = async (id) => { if(confirm("確定要刪除這份檔案嗎？")) await deleteDoc(doc(db, "data", id)); };
+    window.delSingle = async (id) => { if(confirm("確定刪除嗎？")) await deleteDoc(doc(db, "data", id)); };
     window.deleteWholeMonth = async () => {
         const month = document.getElementById('delMonthFilter').value;
         if(!month) return alert("請先選擇月份！");
