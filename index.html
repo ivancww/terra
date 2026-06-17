@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terra資源系統 v1.8.7</title>
+    <title>Terra資源系統 v1.8.8</title>
     <link rel="manifest" href="./manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -51,7 +51,6 @@
         .ios-guide-box { display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: white; color: #333; padding: 15px; border-radius: 14px; box-shadow: 0 8px 30px rgba(0,0,0,0.2); width: 85%; max-width: 340px; text-align: center; font-size: 13px; font-weight: bold; border: 2px solid var(--brand-color); z-index: 9999; }
         .ios-guide-box::after { content: ''; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); border-width: 10px 10px 0; border-style: solid; border-color: white transparent; display: block; width: 0; }
         .ios-icon-span { font-size: 18px; vertical-align: middle; background: #eee; padding: 2px 6px; border-radius: 4px; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
@@ -63,7 +62,7 @@
     <img src="./terra-192.png" alt="Logo" onclick="goToAdmin()">
     <span id="headerTitle">Terra資源系統</span>
     <button class="noti-btn" id="notiBtn" onclick="enableNotifications()">🔔 通知</button>
-    <span class="version-tag">v1.8.7</span>
+    <span class="version-tag">v1.8.8</span>
 </div>
 
 <div class="container">
@@ -129,8 +128,8 @@
     let allDocs = [];
     let currentSection = 'Memo';
 
-    // 🛑 記得將呢條 Link 換成你最新嗰條 GAS_URL
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbxU9pOHkYi9OgWIk0ABVFQjlUp3KktBSK1WwR9lo66YAlWvnmkI6zIH12nHtI-6Lejgsg/exec";
+    // 🛑 已經更新為你最新畀我嘅 GAS Link
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzoa4HBh9fLLjyc4FX1Z6kdNQ_ipkZRtfhsrptU9K3_rmhRsIkt49JBMstPbfL73L5kSw/exec";
 
     onMessage(messaging, (payload) => { showModal("🚨", `系統新消息：\n\n${payload.notification.title}\n${payload.notification.body}`); });
 
