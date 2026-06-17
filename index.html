@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terra資源系統 v1.8.0</title>
+    <title>Terra資源系統 v1.8.3</title>
     <link rel="manifest" href="./manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -77,7 +77,7 @@
     
     <button class="noti-btn" onclick="enableNotifications()">🔔 通知</button>
     
-    <span class="version-tag">v1.8.0</span>
+    <span class="version-tag">v1.8.3</span>
 </div>
 
 <div class="container">
@@ -123,9 +123,10 @@
 
 </div>
 
+<!-- 🍎 iOS 專屬智慧導航浮框 -->
 <div id="iosGuide" class="ios-guide-box">
-    💡 發現你正使用 iPhone/iPad 開啟！<br>
-    請點擊下方導航欄的 <span class="ios-icon-span">📤分享</span> 按鈕，<br>
+    💡 發現你正使用 iPad/iPhone 開啟！<br>
+    請點擊上方或下方導航欄的 <span class="ios-icon-span">📤分享</span> 按鈕，<br>
     然後向下捲動點擊「<span style="color:#007bff;">加至主畫面</span>」即可完成安裝！
 </div>
 
@@ -154,27 +155,48 @@
     let allDocs = [];
     let currentSection = 'Memo';
 
-    // 🔔 收到推播通知時的前台彈窗處理
+    // 收到推播通知的反應
     onMessage(messaging, (payload) => {
         alert(`🚨 系統新消息：\n${payload.notification.title}\n${payload.notification.body}`);
     });
 
-    // 🔔 獲取使用者權限並儲存 Token 入資料庫名冊
+    // 🔔 獲取使用者權限並儲存 Token (包含 iOS 防呆與 Android 延遲機制)
     window.enableNotifications = async () => {
         try {
+            // 🛑 iOS 終極檢查：判斷是否在 Safari 瀏覽器內
+            const isIOS = (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) && !window.MSStream;
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+
+            if (isIOS && !isStandalone) {
+                return alert("🍎 Apple 系統嚴格限制：\n\n系統偵測到你正在使用 Safari 瀏覽器。\n請先依照畫面底部指示，將系統「加至主畫面」，然後從桌面打開 App，才能成功開啟通知！");
+            }
+
+            // 1. 先問用戶攞權限
             const permission = await Notification.requestPermission();
-            if (permission === 'granted') {
-                const token = await getToken(messaging, { vapidKey: 'BFXLE7KoKWIL459hYUUnQ7lqBu61pZjR780tWI2uEpICiv6Jg-rIokD8qt0tHzXYILgOGyc5J1BEmT_OpGjsgYg' });
-                if (token) {
-                    await setDoc(doc(db, 'fcm_tokens', token), { token: token, createdAt: new Date() });
-                    alert("✅ 成功開啟通知！你的裝置已加入接收名冊，將會收到系統最新更新。");
-                }
+            if (permission !== 'granted') {
+                return alert("你拒絕咗通知權限，或者系統版本太舊不支援 (iOS 需 16.4+)。\n請去系統設定開啟。");
+            }
+
+            alert("⏳ 正在連線至 Firebase 獲取安全憑證，請稍候...");
+
+            // 2. 確保背景 Service Worker 已經 100% 準備好
+            const registration = await navigator.serviceWorker.ready;
+
+            // 3. 獲取 Token (強制綁定 registration)
+            const token = await getToken(messaging, { 
+                vapidKey: 'BFXLE7KoKWIL459hYUUnQ7lqBu61pZjR780tWI2uEpICiv6Jg-rIokD8qt0tHzXYILgOGyc5J1BEmT_OpGjsgYg',
+                serviceWorkerRegistration: registration 
+            });
+
+            if (token) {
+                await setDoc(doc(db, 'fcm_tokens', token), { token: token, createdAt: new Date() });
+                alert("✅ 成功開啟通知！你的裝置已加入接收名冊，將會收到系統最新更新。");
             } else {
-                alert("你拒絕咗通知權限。");
+                alert("無法獲取 Token，請重試。");
             }
         } catch (error) {
-            console.error(error);
-            alert("開啟通知失敗。請確保你已將 App 加入主畫面，並直接從桌面開啟使用。");
+            console.error("Firebase Token Error: ", error);
+            alert("連線失敗！\n錯誤原因：" + error.message + "\n\n建議：請將此 App 從背景徹底關閉後重開再試一次。");
         }
     };
 
@@ -195,15 +217,17 @@
         }
     };
 
-    window.addEventListener('DOMContentLoaded', () => {
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    // 🍎 延遲 0.5 秒顯示 iOS 安裝提示，確保不被 Apple 載入機制吃掉
+    setTimeout(() => {
+        const isIOS = (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) && !window.MSStream;
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+        
         if (isIOS && !isStandalone) {
             document.getElementById('iosGuide').style.display = 'block';
         }
-    });
+    }, 500);
 
-    // 🗂️ Firestore 資料讀取與顯示邏輯
+    // 🗂️ 讀取資料列表
     onSnapshot(query(collection(db, "data"), orderBy("createdAt", "desc")), (snapshot) => {
         allDocs = snapshot.docs.map(doc => doc.data());
         updateMonthFilterOptions();
@@ -276,7 +300,6 @@
         });
     }
 
-    // ⚙️ PWA Service Worker 註冊
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js').then(reg => {
             reg.addEventListener('updatefound', () => {
