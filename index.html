@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terra資源系統 v1.8.6</title>
+    <title>Terra資源系統 v1.8.7</title>
     <link rel="manifest" href="./manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -12,39 +12,28 @@
     <style>
         :root { --brand-color: #0d1b2a; --bg-color: #f4f7f6; --text-main: #333; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg-color); margin: 0; padding-bottom: 30px; -webkit-user-select: none; }
-        
-        /* 頂部導航與按鈕 */
         .header { background: var(--brand-color); color: white; padding: 18px; text-align: center; font-weight: bold; font-size: 1.2em; position: relative; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
         .header img { width: 28px; height: 28px; margin-right: 10px; border-radius: 4px; cursor: pointer; }
         .version-tag { font-size: 11px; background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px; position: absolute; right: 15px; }
         .noti-btn { position: absolute; right: 65px; background: #ffc107; color: #333; border: none; padding: 5px 10px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: all 0.3s; }
         .noti-btn.success { background: #28a745; color: white; }
         .back-btn { display: none; background: rgba(255,255,255,0.2); color: white; border: none; padding: 6px 12px; border-radius: 4px; position: absolute; left: 15px; cursor: pointer; font-size: 13px; font-weight: bold; }
-
         .container { padding: 20px; max-width: 800px; margin: 0 auto; }
-        
-        /* 主頁公事包排版 */
         .app-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 30px; }
         @media(min-width: 600px) { .app-grid { grid-template-columns: repeat(3, 1fr); } }
         .briefcase-card { background: white; border-radius: 16px; padding: 25px 15px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgba(0,0,0,0.03); }
         .briefcase-card:active { transform: scale(0.95); box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
         .briefcase-icon { font-size: 45px; margin-bottom: 12px; display: block; }
         .briefcase-title { font-size: 16px; font-weight: bold; color: var(--brand-color); }
-        
-        /* 獨立資料頁面 */
         .page-view { display: none; }
         .page-title { font-size: 20px; font-weight: bold; color: var(--brand-color); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--brand-color); padding-bottom: 8px; }
         .filter-section { display: flex; gap: 10px; margin-bottom: 15px; }
         .filter-section select { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 14px; background-color: white; font-weight: bold; }
-        
-        /* 資料卡片 */
         .card { background: white; padding: 16px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; justify-content: space-between; align-items: center; }
         .card-info h4 { margin: 0 0 6px 0; font-size: 16px; color: var(--text-main); }
         .card-info span { font-size: 11px; color: #666; background: #eef2f5; padding: 3px 8px; border-radius: 12px; margin-right: 5px; font-weight: bold; }
         .new-badge { color: #dc3545; font-size: 11px; font-weight: bold; background: #ffeeba; padding: 2px 6px; border-radius: 4px; margin-left: 5px; animation: pulse 2s infinite; }
         .open-btn { background: var(--brand-color); color: white; border: none; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: bold; white-space: nowrap; box-shadow: 0 2px 6px rgba(13,27,42,0.2); }
-
-        /* 銷售工具專屬獨立 Logo 排版 */
         .tools-list { display: flex; flex-direction: column; gap: 15px; margin-top: 10px; }
         .tool-item { background: white; padding: 15px; border-radius: 14px; display: flex; align-items: center; text-decoration: none; box-shadow: 0 4px 10px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.02); }
         .tool-logo { width: 45px; height: 45px; border-radius: 10px; margin-right: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); object-fit: cover; }
@@ -52,16 +41,11 @@
         .tool-name { font-size: 16px; font-weight: bold; color: var(--brand-color); margin: 0 0 4px 0; }
         .tool-desc { font-size: 12px; color: #777; margin: 0; }
         .tool-arrow { color: #ccc; font-size: 20px; font-weight: bold; margin-left: 10px; }
-
-        /* 自訂對話框 (Modal) */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; justify-content: center; align-items: center; }
-        .modal-box { background: white; width: 80%; max-width: 320px; border-radius: 16px; padding: 25px 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2); animation: popIn 0.3s ease-out; }
+        .modal-box { background: white; width: 80%; max-width: 320px; border-radius: 16px; padding: 25px 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
         .modal-icon { font-size: 40px; margin-bottom: 10px; display: block; }
         .modal-text { font-size: 15px; color: #333; margin-bottom: 25px; line-height: 1.5; white-space: pre-line; word-break: break-word; }
         .modal-btn { background: var(--brand-color); color: white; border: none; padding: 12px 30px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; }
-        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-
-        /* 安裝引導 */
         .android-install-banner { display: none; background: #28a745; color: white; padding: 12px 20px; font-weight: bold; font-size: 14px; justify-content: space-between; align-items: center; box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
         .android-btn { background: white; color: #28a745; border: none; padding: 6px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; }
         .ios-guide-box { display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: white; color: #333; padding: 15px; border-radius: 14px; box-shadow: 0 8px 30px rgba(0,0,0,0.2); width: 85%; max-width: 340px; text-align: center; font-size: 13px; font-weight: bold; border: 2px solid var(--brand-color); z-index: 9999; }
@@ -72,19 +56,14 @@
 </head>
 <body>
 
-<div id="androidBanner" class="android-install-banner">
-    <span>📥 撳此將系統安裝至手機桌面</span>
-    <button class="android-btn" onclick="triggerAndroidInstall()">即刻安裝</button>
-</div>
+<div id="androidBanner" class="android-install-banner"><span>📥 撳此將系統安裝至手機桌面</span><button class="android-btn" onclick="triggerAndroidInstall()">即刻安裝</button></div>
 
 <div class="header">
     <button class="back-btn" id="backBtn" onclick="backToDashboard()">⬅️ 主頁</button>
     <img src="./terra-192.png" alt="Logo" onclick="goToAdmin()">
     <span id="headerTitle">Terra資源系統</span>
-    
     <button class="noti-btn" id="notiBtn" onclick="enableNotifications()">🔔 通知</button>
-    
-    <span class="version-tag">v1.8.6</span>
+    <span class="version-tag">v1.8.7</span>
 </div>
 
 <div class="container">
@@ -133,7 +112,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getFirestore, collection, query, orderBy, onSnapshot, setDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getFirestore, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
     import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-messaging.js";
 
     const app = initializeApp({
@@ -150,33 +129,31 @@
     let allDocs = [];
     let currentSection = 'Memo';
 
+    // 🛑 記得將呢條 Link 換成你最新嗰條 GAS_URL
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxU9pOHkYi9OgWIk0ABVFQjlUp3KktBSK1WwR9lo66YAlWvnmkI6zIH12nHtI-6Lejgsg/exec";
+
     onMessage(messaging, (payload) => { showModal("🚨", `系統新消息：\n\n${payload.notification.title}\n${payload.notification.body}`); });
 
-    // 🆕 檢查本地記憶體，如果之前成功過，開機自動認證，防止失憶
     window.addEventListener('DOMContentLoaded', () => {
         const notiBtn = document.getElementById('notiBtn');
         if (localStorage.getItem('terra_noti_enabled') === 'true') {
             notiBtn.innerText = "✅ 已開啟";
             notiBtn.classList.add('success');
-            // 背景自動靜默向 Firebase 報到，更新 Token
             silentRegisterToken();
         }
     });
 
-    // 🆕 背景自動報到刷新 Token 引擎
     async function silentRegisterToken() {
         try {
             let registration = await navigator.serviceWorker.getRegistration();
             if (!registration) registration = await navigator.serviceWorker.register('./sw.js');
-            const token = await getToken(messaging, { 
-                vapidKey: 'BFXLE7KoKWIL459hYUUnQ7lqBu61pZjR780tWI2uEpICiv6Jg-rIokD8qt0tHzXYILgOGyc5J1BEmT_OpGjsgYg',
-                serviceWorkerRegistration: registration 
-            });
-            if (token) { await setDoc(doc(db, 'fcm_tokens', token), { token: token, createdAt: new Date() }); }
-        } catch (e) { console.log("Silent reg bypass"); }
+            const token = await getToken(messaging, { vapidKey: 'BFXLE7KoKWIL459hYUUnQ7lqBu61pZjR780tWI2uEpICiv6Jg-rIokD8qt0tHzXYILgOGyc5J1BEmT_OpGjsgYg', serviceWorkerRegistration: registration });
+            if (token) {
+                fetch(`${GAS_URL}?action=register&token=${encodeURIComponent(token)}`, { mode: 'no-cors' });
+            }
+        } catch (e) {}
     }
 
-    // 🔔 手動獲取權限
     window.enableNotifications = async () => {
         const notiBtn = document.getElementById('notiBtn');
         if(notiBtn.classList.contains('success')) return showModal("✅", "你已經成功開啟通知，將會收到系統最新更新！");
@@ -190,7 +167,7 @@
             }
 
             const permission = await Notification.requestPermission();
-            if (permission !== 'granted') { return showModal("❌", "你拒絕咗通知權限，或者系統環境不支援。\n請去手機系統設定允許通知。"); }
+            if (permission !== 'granted') { return showModal("❌", "你拒絕咗通知權限，請去手機系統設定允許通知。"); }
 
             notiBtn.innerText = "⏳ 處理中...";
             notiBtn.disabled = true;
@@ -198,26 +175,20 @@
             let registration = await navigator.serviceWorker.getRegistration();
             if (!registration) registration = await navigator.serviceWorker.register('./sw.js');
 
-            const token = await getToken(messaging, { 
-                vapidKey: 'BFXLE7KoKWIL459hYUUnQ7lqBu61pZjR780tWI2uEpICiv6Jg-rIokD8qt0tHzXYILgOGyc5J1BEmT_OpGjsgYg',
-                serviceWorkerRegistration: registration 
-            });
+            const token = await getToken(messaging, { vapidKey: 'BFXLE7KoKWIL459hYUUnQ7lqBu61pZjR780tWI2uEpICiv6Jg-rIokD8qt0tHzXYILgOGyc5J1BEmT_OpGjsgYg', serviceWorkerRegistration: registration });
 
             if (token) {
-                await setDoc(doc(db, 'fcm_tokens', token), { token: token, createdAt: new Date() });
-                
-                // 🆕 寫入永久記憶體
+                await fetch(`${GAS_URL}?action=register&token=${encodeURIComponent(token)}`, { mode: 'no-cors' });
                 localStorage.setItem('terra_noti_enabled', 'true');
                 
                 showModal("✅", "成功開啟通知！你的裝置已加入接收名冊，將會收到系統最新更新。");
                 notiBtn.innerText = "✅ 已開啟";
                 notiBtn.classList.add('success');
             } else {
-                showModal("⚠️", "無法獲取驗證碼，請確保你使用 Chrome 瀏覽器並重試。");
+                showModal("⚠️", "無法獲取驗證碼，請確保使用 Chrome (Android) 或 已安裝至桌面的 App (iOS) 重試。");
                 notiBtn.innerText = "🔔 通知";
             }
         } catch (error) {
-            console.error(error);
             showModal("❌", "連線失敗！\n錯誤原因：" + error.message);
             notiBtn.innerText = "🔔 通知";
         } finally {
@@ -225,7 +196,6 @@
         }
     };
 
-    // 其他基礎 PWA 排版不變...
     let deferredPrompt;
     window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('androidBanner').style.display = 'flex'; });
     window.triggerAndroidInstall = async () => { if (deferredPrompt) { deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; if (outcome === 'accepted') document.getElementById('androidBanner').style.display = 'none'; deferredPrompt = null; } };
@@ -288,11 +258,7 @@
             const newBadge = isNew ? `<span class="new-badge">❗新更新</span>` : '';
             const mTag = data.uploadMonth ? `<span>${data.uploadMonth}</span>` : '';
             const sTag = data.subCategory ? `<span>${data.subCategory}</span>` : '';
-            listDiv.innerHTML += `
-                <div class="card">
-                    <div class="card-info"><h4>${data.title} ${newBadge}</h4><div>${mTag} ${sTag}</div></div>
-                    <a href="${data.url}" target="_blank" class="open-btn">開啟</a>
-                </div>`;
+            listDiv.innerHTML += `<div class="card"><div class="card-info"><h4>${data.title} ${newBadge}</h4><div>${mTag} ${sTag}</div></div><a href="${data.url}" target="_blank" class="open-btn">開啟</a></div>`;
         });
     }
 
