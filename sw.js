@@ -1,12 +1,12 @@
-const CACHE_VERSION = 'v1.8.6'; 
+const CACHE_VERSION = 'v1.8.7'; 
 const CACHE_NAME = `terra-cache-${CACHE_VERSION}`;
 const urlsToCache = [ './', './index.html', './manifest.json', './terra-192.png' ];
 
-// 1. 引入 Firebase 背景通訊模組 (非常重要，無咗佢 Android 會報錯，iPad 熄芒收唔到)
+// 引入 Firebase 背景通訊模組
 importScripts('https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.8.1/firebase-messaging-compat.js');
 
-// 2. 初始化 Firebase (填返你嘅資料)
+// 初始化 Firebase
 firebase.initializeApp({
     apiKey: "AIzaSyCUUqWRecCdnKB7ReNLuSoiDZEs7q9oSJ4",
     projectId: "terra-team",
@@ -16,29 +16,41 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-// 3. 處理背景收信 (熄芒/退回主畫面時觸發)
+// 處理背景收信 (熄芒/退回主畫面時觸發)
 messaging.onBackgroundMessage((payload) => {
-    const notificationTitle = payload.notification.title;
-    const notificationOptions = {
-        body: payload.notification.body,
-        icon: './terra-192.png',
-        badge: './terra-192.png', // Android 狀態列細圖示
-        data: { url: './index.html' } // 紀錄點擊後要打開嘅網址
+    let title = "🚨 Terra系統通告";
+    let body = "有最新文件上載，請登入查看。";
+    let icon = "./terra-192.png";
+    
+    if (payload && payload.notification) {
+        title = payload.notification.title || title;
+        body = payload.notification.body || body;
+    } else if (payload && payload.data) {
+        title = payload.data.title || title;
+        body = payload.data.body || body;
+    }
+
+    const options = {
+        body: body,
+        icon: icon,
+        badge: "./terra-192.png",
+        requireInteraction: true, // 橫幅保持常駐，直到用戶點擊為止
+        data: { url: "./index.html" }
     };
     
     // 強制彈出系統通知
-    self.registration.showNotification(notificationTitle, notificationOptions);
+    self.registration.showNotification(title, options);
 });
 
-// 4. 加入「點擊通知」事件 (撳條通知會自動打開/跳轉去 App 畫面)
+// 加入「點擊通知」事件 (撳條通知會自動打開/跳轉去 App 畫面)
 self.addEventListener('notificationclick', function(event) {
     event.notification.close();
     event.waitUntil(
-        clients.matchAll({ type: 'window' }).then(windowClients => {
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windowClients => {
             // 如果 App 已經開緊，就 focus 返去
             for (let i = 0; i < windowClients.length; i++) {
                 let client = windowClients[i];
-                if (client.url.indexOf('/') !== -1 && 'focus' in client) {
+                if (client.url.includes('index.html') && 'focus' in client) {
                     return client.focus();
                 }
             }
@@ -50,7 +62,7 @@ self.addEventListener('notificationclick', function(event) {
     );
 });
 
-// 5. 基本 PWA 快取與安裝邏輯
+// 基本 PWA 快取與安裝邏輯
 self.addEventListener('install', event => { 
     self.skipWaiting(); 
     event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))); 
@@ -63,7 +75,7 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-    // 略過 firebase API 請求，避免影響連線
+    // 略過 firebase 同 googleapis 請求，避免影響連線
     if (event.request.url.includes('googleapis.com')) return;
     event.respondWith(caches.match(event.request).then(response => response || fetch(event.request)));
 });
