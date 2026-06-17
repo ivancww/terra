@@ -3,114 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terra資源系統 v1.4.1</title>
-    
+    <title>Terra資源系統</title>
     <link rel="manifest" href="./manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="./terra-192.png">
-
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f7f6; }
-        .header { background-color: #007bff; color: white; padding: 15px; display: flex; justify-content: center; align-items: center; position: relative; }
-        .header-content { display: flex; align-items: center; font-size: 18px; font-weight: bold; }
-        .header-logo { width: 30px; height: 30px; margin-right: 10px; border-radius: 6px; cursor: pointer; }
-        .version-tag { font-size: 11px; opacity: 0.8; position: absolute; right: 10px; }
-        
-        .nav-tabs { display: flex; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .tab { flex: 1; text-align: center; padding: 12px 5px; cursor: pointer; font-size: 13px; font-weight: bold; color: #555; border-bottom: 3px solid transparent; }
-        .tab.active { color: #007bff; border-bottom: 3px solid #007bff; }
-        
-        .content-area { padding: 15px; }
-        .doc-card { background: white; padding: 15px; border-radius: 10px; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
-        .doc-info h4 { margin: 0 0 5px 0; font-size: 15px; }
-        .new-badge { color: #dc3545; font-size: 11px; font-weight: bold; background: #ffeeba; padding: 2px 6px; border-radius: 4px; margin-left: 5px; }
-        .open-btn { background: #007bff; color: white; border: none; padding: 8px 15px; border-radius: 6px; text-decoration: none; font-size: 13px; }
-
-        .admin-panel { border: 2px dashed #007bff; padding: 15px; border-radius: 8px; margin-top: 20px; display: none; background: #f8fbff; }
-        .admin-group { margin-bottom: 10px; }
-        input, select { width: 100%; padding: 8px; box-sizing: border-box; margin-top: 4px; }
-        .admin-btn { width: 100%; padding: 10px; background: #28a745; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        body { font-family: sans-serif; background: #f4f7f6; margin: 0; padding-bottom: 50px; }
+        .header { background: #007bff; color: white; padding: 15px; text-align: center; font-weight: bold; font-size: 1.2em; cursor: pointer; }
+        .nav { display: flex; overflow-x: auto; background: white; padding: 10px; gap: 10px; border-bottom: 1px solid #ddd; }
+        .nav div { white-space: nowrap; padding: 8px 12px; border-radius: 20px; background: #eee; cursor: pointer; }
+        .nav div.active { background: #007bff; color: white; }
+        .card { background: white; padding: 15px; margin: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .admin-zone { background: #fff3cd; padding: 15px; margin: 10px; border: 2px dashed #ffc107; display: none; }
+        .del-btn { color: red; cursor: pointer; font-size: 0.8em; margin-left: 10px; }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <div class="header-content">
-        <img src="./terra-192.png" class="header-logo" onclick="triggerAdmin()">
-        Terra資源系統
-    </div>
-    <span class="version-tag">v1.4.1</span>
+<div class="header" onclick="adminLogin()">🏔️ Terra資源系統</div>
+
+<div class="nav" id="tabs">
+    <div class="active" onclick="setTab('Memo')">📝 Memo</div>
+    <div onclick="setTab('新聞')">📰 新聞</div>
+    <div onclick="setTab('分享')">🗣️ 分享</div>
+    <div onclick="setTab('區會議')">🗓️ 區會議</div>
+    <div onclick="setTab('區活動')">🎉 區活動</div>
+    <div onclick="setTab('銷售工具')">💼 銷售工具</div>
 </div>
 
-<div class="nav-tabs" id="tabs">
-    <div class="tab active" onclick="switchTab('Memo')">Memo</div>
-    <div class="tab" onclick="switchTab('同事分享')">分享</div>
-    <div class="tab" onclick="switchTab('新聞')">新聞</div>
-</div>
+<div id="content"></div>
 
-<div class="content-area" id="dynamicList">資料載入中...</div>
-
-<div class="content-area admin-panel" id="adminPanel">
-    <h4 style="margin-top:0;">🔒 管理員發佈</h4>
-    <div class="admin-group"><label>標題</label><input type="text" id="adminTitle"></div>
-    <div class="admin-group"><label>分類</label><select id="adminSection"><option value="Memo">Memo</option><option value="同事分享">同事分享</option><option value="新聞">新聞</option></select></div>
-    <div class="admin-group"><label>連結/檔案</label><input type="text" id="adminLink" placeholder="網址或連結"></div>
-    <button class="admin-btn" id="adminSubmit">發佈更新</button>
+<div class="admin-zone" id="adminPanel">
+    <h3>管理員後台</h3>
+    <input type="text" id="title" placeholder="輸入標題主題"><br><br>
+    <select id="section">
+        <option>Memo</option><option>新聞</option><option>分享</option>
+        <option>區會議</option><option>區活動</option><option>銷售工具</option>
+    </select><br><br>
+    <input type="file" id="fileInput"><br><br>
+    <input type="text" id="link" placeholder="或貼上網址連結"><br><br>
+    <button onclick="uploadData()">發佈資料</button>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getFirestore, collection, query, orderBy, onSnapshot, addDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
 
-    const app = initializeApp({
-        apiKey: "AIzaSyCUUqWRecCdnKB7ReNLuSoiDZEs7q9oSJ4",
-        authDomain: "terra-team.firebaseapp.com",
-        projectId: "terra-team",
-        storageBucket: "terra-team.firebasestorage.app",
-        messagingSenderId: "781876962987",
-        appId: "1:781876962987:web:33c1f7ae868fc3454779ee"
-    });
-    const db = getFirestore(app);
+    const db = getFirestore(initializeApp({ /* 填入你的 Firebase Config */ }));
+    const storage = getStorage();
+    let currentSection = 'Memo';
+    let isAdmin = false;
 
-    let allDocs = [];
-    let currentTab = 'Memo';
+    window.adminLogin = () => { if(prompt("密碼") === "Terra2026") { isAdmin = true; document.getElementById('adminPanel').style.display = 'block'; } };
+    window.setTab = (s) => { currentSection = s; render(); };
 
-    window.switchTab = (tab) => {
-        currentTab = tab;
-        document.querySelectorAll('.tab').forEach(el => el.classList.toggle('active', el.innerText === tab));
-        render();
-    };
-
-    window.triggerAdmin = () => {
-        if(prompt("🔑 密碼") === "Terra2026") document.getElementById('adminPanel').style.display = 'block';
-    };
-
-    onSnapshot(query(collection(db, "team_documents"), orderBy("createdAt", "desc")), (snap) => {
-        allDocs = snap.docs.map(d => d.data());
-        render();
-    });
-
-    function render() {
-        const list = document.getElementById('dynamicList');
-        const now = new Date();
-        const filtered = allDocs.filter(d => d.mainSection === currentTab);
-        list.innerHTML = filtered.length ? filtered.map(d => `
-            <div class="doc-card">
-                <div class="doc-info"><h4>${d.title} ${(d.createdAt && (now - d.createdAt.toDate()) < 604800000) ? '<span class="new-badge">❗新</span>' : ''}</h4></div>
-                <a href="${d.externalLink || d.fileUrl}" target="_blank" class="open-btn">開啟</a>
-            </div>`).join('') : '<p style="text-align:center; color:#888;">暫無資料</p>';
-    }
-
-    document.getElementById('adminSubmit').onclick = async () => {
-        await addDoc(collection(db, "team_documents"), {
-            title: document.getElementById('adminTitle').value,
-            mainSection: document.getElementById('adminSection').value,
-            externalLink: document.getElementById('adminLink').value,
-            createdAt: new Date()
+    onSnapshot(query(collection(db, "data"), orderBy("date", "desc")), (snap) => {
+        const list = document.getElementById('content');
+        list.innerHTML = '';
+        snap.forEach(d => {
+            const data = d.data();
+            if(data.section !== currentSection) return;
+            list.innerHTML += `
+                <div class="card">
+                    <div><strong>${data.title}</strong><br><small>${data.date}</small></div>
+                    <a href="${data.url}" target="_blank">開啟</a>
+                    ${isAdmin ? `<span class="del-btn" onclick="del('${d.id}')">刪除</span>` : ''}
+                </div>`;
         });
-        alert('發佈成功！');
-        location.reload();
+    });
+
+    window.del = async (id) => { if(confirm("確定刪除?")) await deleteDoc(doc(db, "data", id)); };
+
+    window.uploadData = async () => {
+        let url = document.getElementById('link').value;
+        const file = document.getElementById('fileInput').files[0];
+        if(file) {
+            const refR = ref(storage, file.name);
+            await uploadBytes(refR, file);
+            url = await getDownloadURL(refR);
+        }
+        await addDoc(collection(db, "data"), {
+            title: document.getElementById('title').value,
+            section: document.getElementById('section').value,
+            url: url,
+            date: new Date().toISOString().slice(0, 7) // 存月份 YYYY-MM
+        });
+        alert("發佈成功");
     };
 </script>
 </body>
