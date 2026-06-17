@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terra資源系統 v1.8.3</title>
+    <title>Terra資源系統 v1.8.5</title>
     <link rel="manifest" href="./manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -17,7 +17,8 @@
         .header { background: var(--brand-color); color: white; padding: 18px; text-align: center; font-weight: bold; font-size: 1.2em; position: relative; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
         .header img { width: 28px; height: 28px; margin-right: 10px; border-radius: 4px; cursor: pointer; }
         .version-tag { font-size: 11px; background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px; position: absolute; right: 15px; }
-        .noti-btn { position: absolute; right: 65px; background: #ffc107; color: #333; border: none; padding: 4px 8px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 11px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .noti-btn { position: absolute; right: 65px; background: #ffc107; color: #333; border: none; padding: 5px 10px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: all 0.3s; }
+        .noti-btn.success { background: #28a745; color: white; }
         .back-btn { display: none; background: rgba(255,255,255,0.2); color: white; border: none; padding: 6px 12px; border-radius: 4px; position: absolute; left: 15px; cursor: pointer; font-size: 13px; font-weight: bold; }
 
         .container { padding: 20px; max-width: 800px; margin: 0 auto; }
@@ -46,21 +47,26 @@
         /* 💼 銷售工具專屬獨立 Logo 排版 */
         .tools-list { display: flex; flex-direction: column; gap: 15px; margin-top: 10px; }
         .tool-item { background: white; padding: 15px; border-radius: 14px; display: flex; align-items: center; text-decoration: none; box-shadow: 0 4px 10px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.02); }
-        .tool-item:active { background: #f0f0f0; }
         .tool-logo { width: 45px; height: 45px; border-radius: 10px; margin-right: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); object-fit: cover; }
         .tool-info { flex: 1; }
         .tool-name { font-size: 16px; font-weight: bold; color: var(--brand-color); margin: 0 0 4px 0; }
         .tool-desc { font-size: 12px; color: #777; margin: 0; }
         .tool-arrow { color: #ccc; font-size: 20px; font-weight: bold; margin-left: 10px; }
 
-        /* 🆕 Android & iOS 安裝引導 */
+        /* 🆕 自訂對話框 (Modal) 替代核突 Alert */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; justify-content: center; align-items: center; }
+        .modal-box { background: white; width: 80%; max-width: 320px; border-radius: 16px; padding: 25px 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2); animation: popIn 0.3s ease-out; }
+        .modal-icon { font-size: 40px; margin-bottom: 10px; display: block; }
+        .modal-text { font-size: 15px; color: #333; margin-bottom: 25px; line-height: 1.5; white-space: pre-line; word-break: break-word; }
+        .modal-btn { background: var(--brand-color); color: white; border: none; padding: 12px 30px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; }
+        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        /* iOS/Android 安裝引導 */
         .android-install-banner { display: none; background: #28a745; color: white; padding: 12px 20px; font-weight: bold; font-size: 14px; justify-content: space-between; align-items: center; box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
         .android-btn { background: white; color: #28a745; border: none; padding: 6px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; }
         .ios-guide-box { display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: white; color: #333; padding: 15px; border-radius: 14px; box-shadow: 0 8px 30px rgba(0,0,0,0.2); width: 85%; max-width: 340px; text-align: center; font-size: 13px; font-weight: bold; border: 2px solid var(--brand-color); z-index: 9999; }
         .ios-guide-box::after { content: ''; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); border-width: 10px 10px 0; border-style: solid; border-color: white transparent; display: block; width: 0; }
         .ios-icon-span { font-size: 18px; vertical-align: middle; background: #eee; padding: 2px 6px; border-radius: 4px; }
-        
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
@@ -75,9 +81,9 @@
     <img src="./terra-192.png" alt="Logo" onclick="goToAdmin()">
     <span id="headerTitle">Terra資源系統</span>
     
-    <button class="noti-btn" onclick="enableNotifications()">🔔 通知</button>
+    <button class="noti-btn" id="notiBtn" onclick="enableNotifications()">🔔 通知</button>
     
-    <span class="version-tag">v1.8.3</span>
+    <span class="version-tag">v1.8.5</span>
 </div>
 
 <div class="container">
@@ -120,10 +126,16 @@
 
         <div id="dynamicList">資料載入中...</div>
     </div>
-
 </div>
 
-<!-- 🍎 iOS 專屬智慧導航浮框 -->
+<div id="customModal" class="modal-overlay">
+    <div class="modal-box">
+        <span id="modalIcon" class="modal-icon">🔔</span>
+        <div id="modalText" class="modal-text">訊息內容</div>
+        <button class="modal-btn" onclick="closeModal()">確認</button>
+    </div>
+</div>
+
 <div id="iosGuide" class="ios-guide-box">
     💡 發現你正使用 iPad/iPhone 開啟！<br>
     請點擊上方或下方導航欄的 <span class="ios-icon-span">📤分享</span> 按鈕，<br>
@@ -131,9 +143,14 @@
 </div>
 
 <script>
-    function goToAdmin() {
-        if(prompt("🔑 請輸入管理員密碼：") === "Terra2026") { window.location.href = "./admin.html"; }
+    function goToAdmin() { if(prompt("🔑 請輸入管理員密碼：") === "Terra2026") { window.location.href = "./admin.html"; } }
+    
+    function showModal(icon, text) {
+        document.getElementById('modalIcon').innerText = icon;
+        document.getElementById('modalText').innerText = text;
+        document.getElementById('customModal').style.display = 'flex';
     }
+    function closeModal() { document.getElementById('customModal').style.display = 'none'; }
 </script>
 
 <script type="module">
@@ -155,34 +172,35 @@
     let allDocs = [];
     let currentSection = 'Memo';
 
-    // 收到推播通知的反應
+    // 前景收到通知時使用自訂彈窗
     onMessage(messaging, (payload) => {
-        alert(`🚨 系統新消息：\n${payload.notification.title}\n${payload.notification.body}`);
+        showModal("🚨", `系統新消息：\n\n${payload.notification.title}\n${payload.notification.body}`);
     });
 
-    // 🔔 獲取使用者權限並儲存 Token (包含 iOS 防呆與 Android 延遲機制)
+    // 🔔 獲取使用者權限並儲存 Token
     window.enableNotifications = async () => {
+        const notiBtn = document.getElementById('notiBtn');
+        if(notiBtn.classList.contains('success')) return showModal("✅", "你已經成功開啟通知，將會收到系統最新更新！");
+
         try {
-            // 🛑 iOS 終極檢查：判斷是否在 Safari 瀏覽器內
             const isIOS = (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) && !window.MSStream;
             const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
 
             if (isIOS && !isStandalone) {
-                return alert("🍎 Apple 系統嚴格限制：\n\n系統偵測到你正在使用 Safari 瀏覽器。\n請先依照畫面底部指示，將系統「加至主畫面」，然後從桌面打開 App，才能成功開啟通知！");
+                return showModal("🍎", "Apple 系統嚴格限制：\n\n請先依照畫面底部指示，將系統「加至主畫面」，然後從桌面打開 App，才能成功開啟通知！");
             }
 
-            // 1. 先問用戶攞權限
             const permission = await Notification.requestPermission();
             if (permission !== 'granted') {
-                return alert("你拒絕咗通知權限，或者系統版本太舊不支援 (iOS 需 16.4+)。\n請去系統設定開啟。");
+                return showModal("❌", "你拒絕咗通知權限，或者系統環境不支援。\n請去系統設定允許通知。");
             }
 
-            alert("⏳ 正在連線至 Firebase 獲取安全憑證，請稍候...");
+            notiBtn.innerText = "⏳ 處理中...";
+            notiBtn.disabled = true;
 
-            // 2. 確保背景 Service Worker 已經 100% 準備好
-            const registration = await navigator.serviceWorker.ready;
+            let registration = await navigator.serviceWorker.getRegistration();
+            if (!registration) registration = await navigator.serviceWorker.register('./sw.js');
 
-            // 3. 獲取 Token (強制綁定 registration)
             const token = await getToken(messaging, { 
                 vapidKey: 'BFXLE7KoKWIL459hYUUnQ7lqBu61pZjR780tWI2uEpICiv6Jg-rIokD8qt0tHzXYILgOGyc5J1BEmT_OpGjsgYg',
                 serviceWorkerRegistration: registration 
@@ -190,44 +208,32 @@
 
             if (token) {
                 await setDoc(doc(db, 'fcm_tokens', token), { token: token, createdAt: new Date() });
-                alert("✅ 成功開啟通知！你的裝置已加入接收名冊，將會收到系統最新更新。");
+                showModal("✅", "成功開啟通知！你的裝置已加入接收名冊，將會收到系統最新更新。");
+                notiBtn.innerText = "✅ 已開啟";
+                notiBtn.classList.add('success');
             } else {
-                alert("無法獲取 Token，請重試。");
+                showModal("⚠️", "無法獲取驗證碼，請確保你使用 Chrome 瀏覽器並重試。");
+                notiBtn.innerText = "🔔 通知";
             }
         } catch (error) {
-            console.error("Firebase Token Error: ", error);
-            alert("連線失敗！\n錯誤原因：" + error.message + "\n\n建議：請將此 App 從背景徹底關閉後重開再試一次。");
+            console.error(error);
+            showModal("❌", "連線失敗！\n錯誤原因：" + error.message + "\n\n建議：請確保使用 Chrome (Android) 瀏覽器，並將此 App 徹底關閉後重開。");
+            notiBtn.innerText = "🔔 通知";
+        } finally {
+            notiBtn.disabled = false;
         }
     };
 
-    // 📱 安裝引導邏輯
     let deferredPrompt;
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        document.getElementById('androidBanner').style.display = 'flex'; 
-    });
+    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('androidBanner').style.display = 'flex'; });
+    window.triggerAndroidInstall = async () => { if (deferredPrompt) { deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; if (outcome === 'accepted') document.getElementById('androidBanner').style.display = 'none'; deferredPrompt = null; } };
 
-    window.triggerAndroidInstall = async () => {
-        if (deferredPrompt) {
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            if (outcome === 'accepted') { document.getElementById('androidBanner').style.display = 'none'; }
-            deferredPrompt = null;
-        }
-    };
-
-    // 🍎 延遲 0.5 秒顯示 iOS 安裝提示，確保不被 Apple 載入機制吃掉
     setTimeout(() => {
         const isIOS = (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) && !window.MSStream;
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
-        
-        if (isIOS && !isStandalone) {
-            document.getElementById('iosGuide').style.display = 'block';
-        }
+        if (isIOS && !isStandalone) document.getElementById('iosGuide').style.display = 'block';
     }, 500);
 
-    // 🗂️ 讀取資料列表
     onSnapshot(query(collection(db, "data"), orderBy("createdAt", "desc")), (snapshot) => {
         allDocs = snapshot.docs.map(doc => doc.data());
         updateMonthFilterOptions();
@@ -250,11 +256,9 @@
         document.getElementById('backBtn').style.display = 'block';
         document.getElementById('pageTitleDisplay').innerText = displayName;
         document.getElementById('headerTitle').innerText = sectionName;
-
         document.getElementById('staticTools').style.display = (sectionName === '銷售工具') ? 'flex' : 'none';
         document.getElementById('subCatFilter').style.display = (sectionName === 'Memo') ? 'block' : 'none';
         document.getElementById('filterArea').style.display = (sectionName === '銷售工具') ? 'none' : 'flex';
-        
         document.getElementById('monthFilter').value = "";
         document.getElementById('subCatFilter').value = "";
         renderList();
@@ -272,29 +276,19 @@
         const mFilter = document.getElementById('monthFilter').value;
         const sFilter = document.getElementById('subCatFilter').value;
         listDiv.innerHTML = '';
-        
         let filteredDocs = allDocs.filter(d => d.section === currentSection);
         if (mFilter) filteredDocs = filteredDocs.filter(d => d.uploadMonth === mFilter);
         if (currentSection === 'Memo' && sFilter) filteredDocs = filteredDocs.filter(d => d.subCategory === sFilter);
-        
-        if(filteredDocs.length === 0) { 
-            listDiv.innerHTML = '<p style="text-align:center; color:#888; padding: 20px 0;">該項目暫無動態上載資料</p>'; 
-            return; 
-        }
-
+        if(filteredDocs.length === 0) { listDiv.innerHTML = '<p style="text-align:center; color:#888; padding: 20px 0;">該項目暫無動態上載資料</p>'; return; }
         const now = new Date();
         filteredDocs.forEach(data => {
             const isNew = data.createdAt && (now - data.createdAt.toDate()) < 604800000;
             const newBadge = isNew ? `<span class="new-badge">❗新更新</span>` : '';
             const mTag = data.uploadMonth ? `<span>${data.uploadMonth}</span>` : '';
             const sTag = data.subCategory ? `<span>${data.subCategory}</span>` : '';
-
             listDiv.innerHTML += `
                 <div class="card">
-                    <div class="card-info">
-                        <h4>${data.title} ${newBadge}</h4>
-                        <div>${mTag} ${sTag}</div>
-                    </div>
+                    <div class="card-info"><h4>${data.title} ${newBadge}</h4><div>${mTag} ${sTag}</div></div>
                     <a href="${data.url}" target="_blank" class="open-btn">開啟</a>
                 </div>`;
         });
