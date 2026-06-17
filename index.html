@@ -3,94 +3,169 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terra資源系統</title>
+    <title>Terra資源系統 v1.5.0</title>
     <link rel="manifest" href="./manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="./terra-192.png">
+    
     <style>
-        body { font-family: sans-serif; background: #f4f7f6; margin: 0; padding-bottom: 50px; }
-        .header { background: #007bff; color: white; padding: 15px; text-align: center; font-weight: bold; font-size: 1.2em; cursor: pointer; }
-        .nav { display: flex; overflow-x: auto; background: white; padding: 10px; gap: 10px; border-bottom: 1px solid #ddd; }
-        .nav div { white-space: nowrap; padding: 8px 12px; border-radius: 20px; background: #eee; cursor: pointer; }
-        .nav div.active { background: #007bff; color: white; }
-        .card { background: white; padding: 15px; margin: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .admin-zone { background: #fff3cd; padding: 15px; margin: 10px; border: 2px dashed #ffc107; display: none; }
-        .del-btn { color: red; cursor: pointer; font-size: 0.8em; margin-left: 10px; }
+        /* 內嵌樣式表 */
+        :root { --brand-color: #0d1b2a; --bg-color: #f4f7f6; --text-main: #333; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg-color); margin: 0; padding-bottom: 50px; }
+        .header { background: var(--brand-color); color: white; padding: 15px; text-align: center; font-weight: bold; font-size: 1.2em; position: relative; display: flex; justify-content: center; align-items: center; }
+        .header img { width: 28px; height: 28px; margin-right: 10px; border-radius: 4px; cursor: pointer; }
+        .version-tag { font-size: 11px; background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px; position: absolute; right: 15px; top: 18px; }
+        .nav { display: flex; overflow-x: auto; background: white; padding: 10px; gap: 10px; border-bottom: 1px solid #ddd; white-space: nowrap; }
+        .nav div { padding: 8px 12px; border-radius: 20px; background: #eee; cursor: pointer; font-size: 14px; font-weight: bold; color: #555; }
+        .nav div.active { background: var(--brand-color); color: white; }
+        .content-area { padding: 15px; }
+        .filter-section { display: flex; gap: 10px; margin-bottom: 15px; }
+        .filter-section select { flex: 1; padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 14px; background-color: white; }
+        .card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .card-info h4 { margin: 0 0 5px 0; font-size: 15px; color: var(--text-main); }
+        .card-info span { font-size: 12px; color: #666; background: #eef2f5; padding: 3px 8px; border-radius: 12px; margin-right: 5px; }
+        .new-badge { color: #dc3545; font-size: 11px; font-weight: bold; background: #ffeeba; padding: 2px 6px; border-radius: 4px; margin-left: 5px; }
+        .open-btn { background: var(--brand-color); color: white; border: none; padding: 8px 15px; border-radius: 5px; text-decoration: none; font-size: 13px; font-weight: bold; white-space: nowrap; }
+        .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        .tool-btn { background: linear-gradient(135deg, var(--brand-color), #00d2ff); color: white; text-align: center; padding: 20px 10px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 14px; }
     </style>
 </head>
 <body>
 
-<div class="header" onclick="adminLogin()">🏔️ Terra資源系統</div>
+<div class="header">
+    <!-- 加入 onclick 跳轉邏輯 -->
+    <img src="./terra-192.png" alt="Logo" onclick="goToAdmin()">Terra資源系統
+    <span class="version-tag">v1.5.0</span>
+</div>
 
 <div class="nav" id="tabs">
-    <div class="active" onclick="setTab('Memo')">📝 Memo</div>
-    <div onclick="setTab('新聞')">📰 新聞</div>
-    <div onclick="setTab('分享')">🗣️ 分享</div>
-    <div onclick="setTab('區會議')">🗓️ 區會議</div>
-    <div onclick="setTab('區活動')">🎉 區活動</div>
-    <div onclick="setTab('銷售工具')">💼 銷售工具</div>
+    <div class="active" onclick="switchTab('Memo')">📝 Memo</div>
+    <div onclick="switchTab('新聞')">📰 新聞</div>
+    <div onclick="switchTab('分享')">🗣️ 分享</div>
+    <div onclick="switchTab('區會議')">🗓️ 區會議</div>
+    <div onclick="switchTab('區活動')">🎉 區活動</div>
+    <div onclick="switchTab('銷售工具')">💼 工具</div>
 </div>
 
-<div id="content"></div>
+<div class="content-area">
+    <div class="filter-section" id="filterArea">
+        <select id="monthFilter" onchange="renderList()"><option value="">所有月份</option></select>
+        <select id="subCatFilter" onchange="renderList()" style="display: none;">
+            <option value="">所有副分類</option>
+            <option value="推廣優惠">推廣優惠</option>
+            <option value="公司獎賞">公司獎賞</option>
+            <option value="公司會議">公司會議</option>
+            <option value="產品更新資料">產品更新資料</option>
+        </select>
+    </div>
 
-<div class="admin-zone" id="adminPanel">
-    <h3>管理員後台</h3>
-    <input type="text" id="title" placeholder="輸入標題主題"><br><br>
-    <select id="section">
-        <option>Memo</option><option>新聞</option><option>分享</option>
-        <option>區會議</option><option>區活動</option><option>銷售工具</option>
-    </select><br><br>
-    <input type="file" id="fileInput"><br><br>
-    <input type="text" id="link" placeholder="或貼上網址連結"><br><br>
-    <button onclick="uploadData()">發佈資料</button>
+    <div id="staticTools" style="display: none;">
+        <div class="tools-grid">
+            <a href="https://ivancww.github.io/avawealth" target="_blank" class="tool-btn">財富傳承系統</a>
+            <a href="https://ivancww.github.io/CIApp" target="_blank" class="tool-btn">危疾計數機</a>
+            <a href="https://ivancww.github.io/medicalclaims" target="_blank" class="tool-btn">醫療理賠指引</a>
+        </div>
+        <hr style="border:0; height:1px; background:#ddd; margin: 20px 0;">
+    </div>
+
+    <div id="dynamicList">資料載入中...</div>
 </div>
+
+<script>
+    // 密碼驗證與跳轉邏輯
+    function goToAdmin() {
+        if(prompt("🔑 請輸入管理員密碼：") === "Terra2026") {
+            window.location.href = "./admin.html"; // 密碼正確，自動跳轉去後台
+        } else {
+            alert("密碼錯誤，拒絕存取。");
+        }
+    }
+</script>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
+    import { getFirestore, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-    const db = getFirestore(initializeApp({ /* 填入你的 Firebase Config */ }));
-    const storage = getStorage();
-    let currentSection = 'Memo';
-    let isAdmin = false;
+    const app = initializeApp({
+        apiKey: "AIzaSyCUUqWRecCdnKB7ReNLuSoiDZEs7q9oSJ4",
+        authDomain: "terra-team.firebaseapp.com",
+        projectId: "terra-team",
+        storageBucket: "terra-team.firebasestorage.app",
+        messagingSenderId: "781876962987",
+        appId: "1:781876962987:web:33c1f7ae868fc3454779ee"
+    });
+    const db = getFirestore(app);
 
-    window.adminLogin = () => { if(prompt("密碼") === "Terra2026") { isAdmin = true; document.getElementById('adminPanel').style.display = 'block'; } };
-    window.setTab = (s) => { currentSection = s; render(); };
+    let allDocs = [];
+    let currentTab = 'Memo';
 
-    onSnapshot(query(collection(db, "data"), orderBy("date", "desc")), (snap) => {
-        const list = document.getElementById('content');
-        list.innerHTML = '';
-        snap.forEach(d => {
-            const data = d.data();
-            if(data.section !== currentSection) return;
-            list.innerHTML += `
-                <div class="card">
-                    <div><strong>${data.title}</strong><br><small>${data.date}</small></div>
-                    <a href="${data.url}" target="_blank">開啟</a>
-                    ${isAdmin ? `<span class="del-btn" onclick="del('${d.id}')">刪除</span>` : ''}
-                </div>`;
-        });
+    onSnapshot(query(collection(db, "data"), orderBy("createdAt", "desc")), (snapshot) => {
+        allDocs = snapshot.docs.map(doc => doc.data());
+        updateMonthFilterOptions();
+        renderList();
     });
 
-    window.del = async (id) => { if(confirm("確定刪除?")) await deleteDoc(doc(db, "data", id)); };
+    function updateMonthFilterOptions() {
+        const monthSelect = document.getElementById('monthFilter');
+        const currentSelection = monthSelect.value;
+        const uniqueMonths = [...new Set(allDocs.map(doc => doc.uploadMonth).filter(m => m))].sort().reverse();
+        monthSelect.innerHTML = '<option value="">所有月份</option>';
+        uniqueMonths.forEach(m => monthSelect.innerHTML += `<option value="${m}">${m}</option>`);
+        monthSelect.value = currentSelection;
+    }
 
-    window.uploadData = async () => {
-        let url = document.getElementById('link').value;
-        const file = document.getElementById('fileInput').files[0];
-        if(file) {
-            const refR = ref(storage, file.name);
-            await uploadBytes(refR, file);
-            url = await getDownloadURL(refR);
-        }
-        await addDoc(collection(db, "data"), {
-            title: document.getElementById('title').value,
-            section: document.getElementById('section').value,
-            url: url,
-            date: new Date().toISOString().slice(0, 7) // 存月份 YYYY-MM
-        });
-        alert("發佈成功");
+    window.switchTab = function(tabName) {
+        currentTab = tabName;
+        document.querySelectorAll('.nav div').forEach(el => el.classList.toggle('active', el.innerText.includes(tabName) || (tabName === '銷售工具' && el.innerText.includes('工具'))));
+        document.getElementById('staticTools').style.display = (tabName === '銷售工具') ? 'block' : 'none';
+        document.getElementById('subCatFilter').style.display = (tabName === 'Memo') ? 'block' : 'none';
+        document.getElementById('filterArea').style.display = (tabName === '銷售工具') ? 'none' : 'flex';
+        document.getElementById('monthFilter').value = "";
+        document.getElementById('subCatFilter').value = "";
+        renderList();
     };
+
+    window.renderList = function() {
+        const listDiv = document.getElementById('dynamicList');
+        const mFilter = document.getElementById('monthFilter').value;
+        const sFilter = document.getElementById('subCatFilter').value;
+        listDiv.innerHTML = '';
+        
+        let filteredDocs = allDocs.filter(d => d.section === currentTab);
+        if (mFilter) filteredDocs = filteredDocs.filter(d => d.uploadMonth === mFilter);
+        if (currentTab === 'Memo' && sFilter) filteredDocs = filteredDocs.filter(d => d.subCategory === sFilter);
+        
+        if(filteredDocs.length === 0) { listDiv.innerHTML = '<p style="text-align:center; color:#888;">暫無資料</p>'; return; }
+
+        const now = new Date();
+        filteredDocs.forEach(data => {
+            const isNew = data.createdAt && (now - data.createdAt.toDate()) < 604800000;
+            const newBadge = isNew ? `<span class="new-badge">❗新更新</span>` : '';
+            const mTag = data.uploadMonth ? `<span>${data.uploadMonth}</span>` : '';
+            const sTag = data.subCategory ? `<span>${data.subCategory}</span>` : '';
+
+            listDiv.innerHTML += `
+                <div class="card">
+                    <div class="card-info">
+                        <h4>${data.title} ${newBadge}</h4>
+                        <div>${mTag} ${sTag}</div>
+                    </div>
+                    <a href="${data.url}" target="_blank" class="open-btn">開啟</a>
+                </div>`;
+        });
+    }
+
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').then(reg => {
+            reg.addEventListener('updatefound', () => {
+                const newWorker = reg.installing;
+                newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'activated') window.location.reload();
+                });
+            });
+        });
+    }
 </script>
 </body>
 </html>
