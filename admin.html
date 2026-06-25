@@ -3,225 +3,206 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terra資源系統 - 管理員後台 v2.0.0</title>
+    <title>後台管理系統 v2.0.0</title>
     <style>
-        :root { --brand-color: #0d1b2a; --bg-color: #f4f7f6; --text-main: #333; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg-color); margin: 0; padding-bottom: 40px; -webkit-user-select: none; }
-        
-        /* 100% 對齊前台 Header 風格 */
+        :root { --brand-color: #0d1b2a; --bg-color: #f4f7f6; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg-color); margin: 0; padding-bottom: 50px; }
         .header { background: var(--brand-color); color: white; padding: 18px; text-align: center; font-weight: bold; font-size: 1.2em; position: relative; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
-        .header img { width: 28px; height: 28px; margin-right: 10px; border-radius: 4px; }
         .version-tag { font-size: 11px; background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px; position: absolute; right: 15px; }
-        
+        .back-btn { background: rgba(255,255,255,0.2); color: white; border: none; padding: 6px 12px; border-radius: 4px; position: absolute; left: 15px; cursor: pointer; text-decoration: none; font-size: 13px; font-weight: bold; }
         .container { padding: 20px; max-width: 800px; margin: 0 auto; }
-        
-        /* 🎛️ 完美移植前台九宮格/卡片式排版 */
-        .admin-grid { display: grid; grid-template-columns: repeat(1, 1fr); gap: 20px; margin-top: 25px; }
-        @media(min-width: 600px) { .admin-grid { grid-template-columns: repeat(2, 1fr); } }
-        
-        .briefcase-card { 
-            background: white; border-radius: 16px; padding: 20px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.03);
-            display: flex; flex-direction: column; justify-content: center;
-        }
-        
-        .full-width-card { grid-column: 1 / -1; }
-        
-        label { display: block; font-weight: bold; margin-bottom: 10px; color: var(--brand-color); font-size: 15px; display: flex; align-items: center; gap: 6px; }
-        
-        input[type="text"], input[type="url"], select { 
-            width: 100%; padding: 14px; border: 1px solid #ccc; border-radius: 12px; box-sizing: border-box; font-size: 14px; 
-            background-color: white; font-weight: bold; color: var(--text-main); transition: border 0.2s;
-        }
-        input[type="text"]:focus, input[type="url"]:focus, select:focus { border-color: var(--brand-color); outline: none; }
-        
-        /* 統一前台發佈按鈕質感 */
-        .btn { 
-            background: var(--brand-color); color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; 
-            font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 6px rgba(13,27,42,0.2); transition: all 0.2s; 
-        }
-        .btn:active { transform: scale(0.97); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .btn:disabled { background: #ccc; cursor: not-allowed; box-shadow: none; }
-        
-        .back-link { display: block; text-align: center; margin-top: 25px; color: #666; text-decoration: none; font-size: 14px; font-weight: bold; }
-        .back-link:hover { color: var(--brand-color); text-decoration: underline; }
-        #statusMsg { text-align: center; margin-top: 15px; font-weight: bold; font-size: 14px; }
-
-        /* 💛 還原經典黃色外框 QR Code 區塊 */
-        .qrcode-section { 
-            background: #fff9e6; padding: 20px; border-radius: 16px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 2px solid #ffc107; 
-            margin-top: 25px; text-align: center; grid-column: 1 / -1;
-        }
-        .qrcode-title { font-size: 15px; font-weight: bold; color: #b78103; margin-bottom: 12px; }
-        .qrcode-box { background: white; padding: 12px; border-radius: 12px; display: inline-block; border: 1px solid #ffeeba; }
-        .qrcode-box img { max-width: 140px; height: auto; display: block; margin: 0 auto; }
-        .qrcode-desc { font-size: 12px; color: #b78103; margin-top: 8px; font-weight: bold; }
+        .app-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 30px; }
+        @media(min-width: 600px) { .app-grid { grid-template-columns: repeat(3, 1fr); } }
+        .briefcase-card { background: white; border-radius: 16px; padding: 25px 15px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgba(0,0,0,0.03); }
+        .briefcase-card:active { transform: scale(0.95); }
+        .briefcase-icon { font-size: 45px; margin-bottom: 12px; display: block; }
+        .briefcase-title { font-size: 15px; font-weight: bold; color: var(--brand-color); }
+        .admin-panel { display: none; }
+        .admin-box { background: white; padding: 20px; border-radius: 14px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); }
+        .page-title { font-size: 20px; font-weight: bold; color: var(--brand-color); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--brand-color); padding-bottom: 8px; }
+        .admin-group { margin-bottom: 15px; }
+        .admin-group label { display: block; font-weight: bold; margin-bottom: 6px; font-size: 14px; color: #444; }
+        .admin-group input[type="text"], .admin-group select, .admin-group input[type="file"] { width: 100%; padding: 12px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+        .submit-btn { width: 100%; padding: 14px; background: #28a745; color: white; font-weight: bold; font-size: 16px; border: none; border-radius: 6px; cursor: pointer; box-shadow: 0 4px 10px rgba(40,167,69,0.2); }
+        .submit-btn:disabled { background: #ccc; }
+        .card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--brand-color); }
+        .card-info h4 { margin: 0 0 5px 0; font-size: 15px; }
+        .card-info span { font-size: 12px; color: #777; background: #eee; padding: 2px 6px; border-radius: 4px; }
+        .del-btn { background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 13px; font-weight: bold; }
+        .filter-section { display: flex; gap: 10px; margin-bottom: 15px; }
+        .filter-section select { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #ccc; }
+        .qrcode-box { background: white; padding: 20px; border-radius: 14px; text-align: center; margin-top: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); border: 2px solid #28a745; }
+        .qrcode-img { width: 160px; height: 160px; margin: 15px auto; display: block; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <img src="./terra-192.png" alt="Logo">
-    <span>Terra管理員後台</span>
-    <span class="version-tag">v2.0.0</span>
+    <button class="back-btn" id="adminBackBtn" style="display:none;" onclick="backToAdminDashboard()">📁 控制台</button>
+    <a href="./index.html" class="back-btn" id="exitAdminBtn">⬅️ 離開</a>
+    <span id="adminHeaderTitle">後台管理控制台</span>
+    <span class="version-tag">v1.8.8</span>
 </div>
 
 <div class="container">
-    <form id="uploadForm">
-        <div class="admin-grid">
-            
-            <div class="briefcase-card">
-                <label>📁 1. 選擇主分類</label>
-                <select id="section" required onchange="toggleSubCategory()">
-                    <option value="Memo">📝 Memo</option>
-                    <option value="新聞">📰 新聞通告</option>
-                    <option value="分享">🗣️ 同事分享</option>
-                    <option value="區會議">🗓️ 區會議記錄</option>
-                    <option value="區活動">🎉 區活動花絮</option>
-                    <option value="銷售工具">💼 銷售工具</option>
-                </select>
-            </div>
+    <div id="adminDashboardView" class="app-grid">
+        <div class="briefcase-card" onclick="openAdminSection('Memo', '📝 Memo 管理後台')"><span class="briefcase-icon">📝</span><span class="briefcase-title">Memo</span></div>
+        <div class="briefcase-card" onclick="openAdminSection('新聞', '📰 新聞 管理後台')"><span class="briefcase-icon">📰</span><span class="briefcase-title">新聞通告</span></div>
+        <div class="briefcase-card" onclick="openAdminSection('分享', '🗣️ 分享 管理後台')"><span class="briefcase-icon">🗣️</span><span class="briefcase-title">同事分享</span></div>
+        <div class="briefcase-card" onclick="openAdminSection('區會議', '🗓️ 區會議 管理後台')"><span class="briefcase-icon">🗓️</span><span class="briefcase-title">區會議記錄</span></div>
+        <div class="briefcase-card" onclick="openAdminSection('區活動', '🎉 區活動 管理後台')"><span class="briefcase-icon">🎉</span><span class="briefcase-title">區活動花絮</span></div>
+        <div class="briefcase-card" onclick="openAdminSection('銷售工具', '💼 銷售工具 管理後台')"><span class="briefcase-icon">💼</span><span class="briefcase-title">銷售工具連結</span></div>
+    </div>
 
-            <div class="briefcase-card" id="subCategoryGroup">
-                <label>🏷️ 2. 選擇 Memo 副分類</label>
-                <select id="subCategory">
-                    <option value="" disabled selected>請選擇副分類</option>
-                    <option value="推廣優惠">推廣優惠</option>
-                    <option value="公司獎賞">公司獎賞</option>
-                    <option value="公司會議">公司會議</option>
-                    <option value="產品更新資料">產品更新資料</option>
-                    <option value="核保">核保</option>
-                    <option value="招募">招募</option>
-                    <option value="保單服務">保單服務</option>
-                </select>
-            </div>
+    <div id="qrcodeSection" class="qrcode-box">
+        <h3 style="margin:0; color:#28a745;">🤝 新同事快速加入通道</h3>
+        <img id="qrCodeImg" class="qrcode-img" src="" alt="QR Code 載入中...">
+    </div>
 
-            <div class="briefcase-card">
-                <label>✍️ 3. 標題名稱</label>
-                <input type="text" id="title" placeholder="例如：2026年3月份核保指引" required>
+    <div id="adminPanel" class="admin-panel">
+        <div class="page-title" id="adminPageTitle">分類管理</div>
+        <div class="admin-box">
+            <div class="admin-group"><label>文件主題 / 標題說明</label><input type="text" id="adminTitle" placeholder="如留空將自動顯示為「最新資訊」"></div>
+            <div class="admin-group" id="subCatBox" style="display: none;">
+                <label>Memo 專屬副分類</label>
+                <select id="adminSubCat"><option value="推廣優惠">推廣優惠</option><option value="公司獎賞">公司獎賞</option><option value="公司會議">公司會議</option><option value="產品更新資料">產品更新資料</option><option value="保單服務">保單服務</option><option value="核保">核保</option><option value="招募">招募</option></select>
             </div>
-
-            <div class="briefcase-card">
-                <label>📅 4. 歸屬月份</label>
-                <select id="uploadMonth" required>
-                    <option value="" disabled selected>請選擇月份</option>
-                </select>
-            </div>
-
-            <div class="briefcase-card full-width-card">
-                <label>🔗 5. 檔案連結 (Google Drive / OneDrive / PDF 網址)</label>
-                <input type="url" id="url" placeholder="https://" required>
-            </div>
-
-            <div class="full-width-card">
-                <button type="submit" class="btn" id="submitBtn">確認發佈資源</button>
-                <div id="statusMsg"></div>
-            </div>
-
-            <div class="qrcode-section">
-                <div class="qrcode-title">📲 前台系統快速通道 (QR Code)</div>
-                <div class="qrcode-box">
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://ivancww.github.io" alt="System QR Code">
-                </div>
-                <div class="qrcode-desc">手機/iPad 掃描黃色通道即可快速返回前台安裝</div>
-            </div>
-
+            <div class="admin-group"><label>選擇實體 PDF 檔案（選填）</label><input type="file" id="adminFile"></div>
+            <div class="admin-group" style="text-align:center; font-weight:bold; color:#777; font-size:12px;">─── 或者 ───</div>
+            <div class="admin-group"><label>貼上外部網址或 Google Drive 連結（選填）</label><input type="text" id="adminLink" placeholder="https://..."></div>
+            <button class="submit-btn" id="submitBtn" onclick="uploadData()">發佈到此分類</button>
+            <p id="loadingMsg" style="display:none; text-align:center; color:#ff9900; font-weight:bold;">發佈中...</p>
         </div>
-    </form>
 
-    <a href="./index.html" class="back-link">⬅️ 返回前台主頁</a>
+        <div class="admin-box">
+            <h3 style="margin-top:0; color:#dc3545; font-size:16px;">🧹 清理舊資料緩存</h3>
+            <div class="filter-section">
+                <select id="delMonthFilter"><option value="">選擇要整月刪除的月份...</option></select>
+                <button class="del-btn" onclick="deleteWholeMonth()">🗑️ 刪除整月</button>
+            </div>
+            <hr style="border:0; height:1px; background:#ddd; margin: 15px 0;">
+            <div id="adminList">資料載入中...</div>
+        </div>
+    </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getFirestore, collection, query, orderBy, onSnapshot, addDoc, deleteDoc, doc, getDocs, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
 
-    // Firebase 設定
     const app = initializeApp({
         apiKey: "AIzaSyCUUqWRecCdnKB7ReNLuSoiDZEs7q9oSJ4",
         authDomain: "terra-team.firebaseapp.com",
         projectId: "terra-team",
         storageBucket: "terra-team.firebasestorage.app",
+        messagingSenderId: "781876962987",
         appId: "1:781876962987:web:33c1f7ae868fc3454779ee"
     });
-
     const db = getFirestore(app);
+    const storage = getStorage(app);
+    let allData = [];
+    let currentAdminSection = 'Memo';
 
-    // 動態生成月份清單 (過去 12 個月至未來 2 個月)
-    const monthSelect = document.getElementById('uploadMonth');
-    const today = new Date();
-    for (let i = -2; i <= 12; i++) {
-        const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
-        const yyyy = d.getFullYear();
-        const mm = String(d.getMonth() + 1).padStart(2, '0');
-        const monthStr = `${yyyy}年${mm}月`;
-        monthSelect.innerHTML += `<option value="${monthStr}">${monthStr}</option>`;
-    }
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzoa4HBh9fLLjyc4FX1Z6kdNQ_ipkZRtfhsrptU9K3_rmhRsIkt49JBMstPbfL73L5kSw/exec";
 
-    // 控制副分類顯示與否
-    window.toggleSubCategory = function() {
-        const section = document.getElementById('section').value;
-        const subGroup = document.getElementById('subCategoryGroup');
-        const subCat = document.getElementById('subCategory');
-        
-        if (section === 'Memo') {
-            subGroup.style.opacity = "1";
-            subGroup.style.pointerEvents = "auto";
-            subCat.setAttribute('required', 'true');
-        } else {
-            subGroup.style.opacity = "0.4";
-            subGroup.style.pointerEvents = "none";
-            subCat.removeAttribute('required');
-            subCat.value = ""; 
-        }
-    }
-
-    // 處理表單提交
-    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const submitBtn = document.getElementById('submitBtn');
-        const statusMsg = document.getElementById('statusMsg');
-        
-        const section = document.getElementById('section').value;
-        const subCategory = document.getElementById('subCategory').value;
-        const title = document.getElementById('title').value;
-        const uploadMonth = document.getElementById('uploadMonth').value;
-        const url = document.getElementById('url').value;
-
-        submitBtn.disabled = true;
-        submitBtn.innerText = "發佈中，請稍候...";
-        statusMsg.innerText = "";
-
-        try {
-            await addDoc(collection(db, "data"), {
-                section: section,
-                subCategory: section === 'Memo' ? subCategory : "",
-                title: title,
-                uploadMonth: uploadMonth,
-                url: url,
-                createdAt: serverTimestamp()
-            });
-
-            statusMsg.style.color = "green";
-            statusMsg.innerText = "✅ 發佈成功！前台已即時同步更新。";
-            document.getElementById('uploadForm').reset();
-            toggleSubCategory();
-
-        } catch (error) {
-            console.error("Error adding document: ", error);
-            statusMsg.style.color = "red";
-            statusMsg.innerText = "❌ 發佈失敗，請檢查網絡連線或聯絡管理員。";
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.innerText = "確認發佈資源";
-        }
+    window.addEventListener('DOMContentLoaded', () => {
+        const frontendUrl = window.location.href.replace('admin.html', 'index.html');
+        document.getElementById('qrCodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(frontendUrl)}`;
     });
 
-    // 初始化執行
-    toggleSubCategory();
-</script>
+    onSnapshot(query(collection(db, "data"), orderBy("createdAt", "desc")), (snap) => {
+        allData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderAdminList();
+    });
 
+    window.openAdminSection = function(sectionName, displayName) {
+        currentAdminSection = sectionName;
+        document.getElementById('adminDashboardView').style.display = 'none';
+        document.getElementById('qrcodeSection').style.display = 'none';
+        document.getElementById('exitAdminBtn').style.display = 'none';
+        document.getElementById('adminPanel').style.display = 'block';
+        document.getElementById('adminBackBtn').style.display = 'block';
+        document.getElementById('adminPageTitle').innerText = displayName;
+        document.getElementById('adminHeaderTitle').innerText = sectionName + '管理';
+        document.getElementById('subCatBox').style.display = (sectionName === 'Memo') ? 'block' : 'none';
+        renderAdminList();
+    };
+
+    window.backToAdminDashboard = function() {
+        document.getElementById('adminDashboardView').style.display = 'grid';
+        document.getElementById('qrcodeSection').style.display = 'block';
+        document.getElementById('exitAdminBtn').style.display = 'block';
+        document.getElementById('adminPanel').style.display = 'none';
+        document.getElementById('adminBackBtn').style.display = 'none';
+        document.getElementById('adminHeaderTitle').innerText = '後台管理控制台';
+    };
+
+    function renderAdminList() {
+        const list = document.getElementById('adminList');
+        const monthSelect = document.getElementById('delMonthFilter');
+        list.innerHTML = '';
+        let filtered = allData.filter(d => d.section === currentAdminSection);
+        const uniqueMonths = [...new Set(filtered.map(d => d.uploadMonth).filter(m => m))].sort().reverse();
+        monthSelect.innerHTML = '<option value="">選擇要刪除的月份...</option>';
+        uniqueMonths.forEach(m => monthSelect.innerHTML += `<option value="${m}">${m}</option>`);
+
+        if(filtered.length === 0) {
+            list.innerHTML = '<p style="text-align:center; color:#888; font-size:13px;">當前分類下無上載記錄</p>';
+            return;
+        }
+        filtered.forEach(data => {
+            list.innerHTML += `<div class="card"><div class="card-info"><h4>${data.title}</h4><span>${data.uploadMonth || '無月份'} ${data.subCategory || ''}</span></div><button class="del-btn" onclick="delSingle('${data.id}')">刪除</button></div>`;
+        });
+    }
+
+    window.uploadData = async () => {
+        const titleInput = document.getElementById('adminTitle').value.trim();
+        let url = document.getElementById('adminLink').value.trim();
+        const file = document.getElementById('adminFile').files[0];
+        
+        const finalTitle = titleInput || "最新資訊";
+        
+        document.getElementById('submitBtn').disabled = true;
+        document.getElementById('loadingMsg').style.display = 'block';
+        
+        try {
+            if(file) {
+                const storageRef = ref(storage, 'files/' + Date.now() + '_' + file.name);
+                await uploadBytes(storageRef, file);
+                url = await getDownloadURL(storageRef);
+            }
+            const now = new Date();
+            const uploadMonth = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, '0');
+            const subCat = currentAdminSection === 'Memo' ? document.getElementById('adminSubCat').value : "";
+            
+            await addDoc(collection(db, "data"), { title: finalTitle, section: currentAdminSection, subCategory: subCat, url, uploadMonth, createdAt: now });
+            
+            const notiTitle = titleInput ? `【${currentAdminSection}】${titleInput}` : "🚨 Terra系統有新更新";
+            const notiBody = "管理員剛剛上載了新資訊，請即時查看！";
+            const triggerUrl = `${GAS_URL}?action=send&title=${encodeURIComponent(notiTitle)}&body=${encodeURIComponent(notiBody)}`;
+            
+            fetch(triggerUrl, { mode: 'no-cors' }).catch(e => console.log("發射信號"));
+
+            alert("✅ 成功發佈！全團隊已自動收到通知。");
+            document.getElementById('adminTitle').value = '';
+            document.getElementById('adminFile').value = '';
+            document.getElementById('adminLink').value = '';
+        } catch (e) { alert("發佈失敗"); }
+        finally { document.getElementById('submitBtn').disabled = false; document.getElementById('loadingMsg').style.display = 'none'; }
+    };
+
+    window.delSingle = async (id) => { if(confirm("確定刪除嗎？")) await deleteDoc(doc(db, "data", id)); };
+    window.deleteWholeMonth = async () => {
+        const month = document.getElementById('delMonthFilter').value;
+        if(!month) return alert("請先選擇月份！");
+        if(confirm(`⚠️ 確定要刪除【${currentAdminSection}】中 ${month} 的所有資料嗎？`)) {
+            const q = query(collection(db, "data"), where("section", "==", currentAdminSection), where("uploadMonth", "==", month));
+            const snap = await getDocs(q);
+            for (const d of snap.docs) { await deleteDoc(doc(db, "data", d.id)); }
+            alert("已清空該月資料。");
+        }
+    };
+</script>
 </body>
 </html>
