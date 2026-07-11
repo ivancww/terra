@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terra資源系統 v2.0.0</title>
+    <title>Terra資源系統 v2.1.0</title>
     <link rel="manifest" href="./manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -49,17 +49,39 @@
         .modal-icon { font-size: 40px; margin-bottom: 10px; display: block; }
         .modal-text { font-size: 15px; color: #333; margin-bottom: 25px; line-height: 1.5; white-space: pre-line; word-break: break-word; }
         .modal-btn { background: var(--brand-color); color: white; border: none; padding: 12px 30px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; }
+
+        /* 🔒 全螢幕登入密碼鎖樣式 */
+        .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--brand-color); z-index: 99999; display: flex; justify-content: center; align-items: center; }
+        .login-box { background: white; width: 85%; max-width: 340px; border-radius: 20px; padding: 30px 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .login-logo { width: 60px; height: 60px; border-radius: 12px; margin-bottom: 15px; }
+        .login-title { font-size: 18px; font-weight: bold; color: var(--brand-color); margin-bottom: 20px; }
+        .login-input { width: 100%; padding: 14px; border: 2px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; text-align: center; font-weight: bold; letter-spacing: 2px; margin-bottom: 15px; transition: border-color 0.2s; }
+        .login-input:focus { border-color: var(--brand-color); outline: none; }
+        .login-btn { background: var(--brand-color); color: white; border: none; padding: 14px; width: 100%; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        .login-btn:disabled { background: #888; cursor: not-allowed; }
         
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
 
+<!-- 🔒 密碼登入介面 -->
+<div id="loginOverlay" class="login-overlay">
+    <div class="login-box">
+        <img src="./terra-192.png" alt="Logo" class="login-logo">
+        <div class="login-title">Terra 資源系統 認證</div>
+        <input type="password" id="appPassword" class="login-input" placeholder="請輸入登入密碼" autofocus>
+        <button class="login-btn" id="loginBtn" onclick="verifyAppPassword()">登入系統</button>
+        <p id="loginError" style="color: #dc3545; font-size: 13px; font-weight: bold; margin-top: 10px; display: none;">❌ 密碼不正確，請重試！</p>
+    </div>
+</div>
+
+<!-- 主要系統主體 -->
 <div class="header">
     <button class="back-btn" id="backBtn" onclick="backToDashboard()">⬅️ 主頁</button>
     <img src="./terra-192.png" alt="Logo" onclick="goToAdmin()">
     <span id="headerTitle">Terra資源系統</span>
-    <span class="version-tag">v1.9.0</span>
+    <span class="version-tag">v2.0.0</span>
 </div>
 
 <div class="container">
@@ -105,6 +127,9 @@
     </div>
 </div>
 
+<!-- ========================================== -->
+<!-- iOS / Android PWA 安裝提示 UI (預設隱藏) -->
+<!-- ========================================== -->
 <div id="install-prompt-banner" style="display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: #ffffff; padding: 15px; box-shadow: 0 -4px 15px rgba(0,0,0,0.1); z-index: 9999; text-align: center; border-top-left-radius: 15px; border-top-right-radius: 15px; box-sizing: border-box;">
     <div style="width: 40px; height: 5px; background: #ddd; border-radius: 3px; margin: 0 auto 10px auto;"></div>
     <p style="margin: 0 0 15px 0; font-size: 15px; color: #333; line-height: 1.5;" id="install-text"></p>
@@ -117,6 +142,62 @@
 </div>
 
 <script>
+    // 🔐 遠端 Google Sheet 密碼驗證配置
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzoa4HBh9fLLjyc4FX1Z6kdNQ_ipkZRtfhsrptU9K3_rmhRsIkt49JBMstPbfL73L5kSw/exec";
+
+    function checkLoginStatus() {
+        const isVerified = localStorage.getItem('terra_app_verified');
+        const overlay = document.getElementById('loginOverlay');
+        if (isVerified === 'true') {
+            overlay.style.display = 'none'; // 如果本地緩存已經成功驗證，直接放行
+        } else {
+            overlay.style.display = 'flex'; // 未驗證則鎖定
+        }
+    }
+
+    async function verifyAppPassword() {
+        const inputPass = document.getElementById('appPassword').value.trim();
+        const errorMsg = document.getElementById('loginError');
+        const loginBtn = document.getElementById('loginBtn');
+        
+        if (!inputPass) return;
+
+        loginBtn.disabled = true;
+        loginBtn.innerText = "驗證中...";
+        errorMsg.style.display = 'none';
+
+        try {
+            // 連線到你的新版 GAS 讀取 password 分頁
+            const response = await fetch(`${GAS_URL}?action=checkPassword`);
+            const result = await response.json();
+
+            if (result.success && inputPass === result.password.toString().trim()) {
+                localStorage.setItem('terra_app_verified', 'true');
+                document.getElementById('loginOverlay').style.display = 'none';
+            } else {
+                errorMsg.style.display = 'block';
+                errorMsg.innerText = "❌ 密碼不正確，請重試！";
+                document.getElementById('appPassword').value = '';
+                document.getElementById('appPassword').focus();
+            }
+        } catch (error) {
+            console.error("Password verification failed:", error);
+            errorMsg.style.display = 'block';
+            errorMsg.innerText = "❌ 網絡連線失敗，請檢查網絡後重試。";
+        } finally {
+            loginBtn.disabled = false;
+            loginBtn.innerText = "登入系統";
+        }
+    }
+
+    // 支援實體鍵盤/iPad 鍵盤按下 Enter 直接驗證
+    document.getElementById('appPassword')?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') verifyAppPassword();
+    });
+
+    // 啟動頁面時立刻進行本地狀態檢測
+    checkLoginStatus();
+
     function goToAdmin() { if(prompt("🔑 請輸入管理員密碼：") === "Terra2026") { window.location.href = "./admin.html"; } }
     function showModal(icon, text) { document.getElementById('modalIcon').innerText = icon; document.getElementById('modalText').innerText = text; document.getElementById('customModal').style.display = 'flex'; }
     function closeModal() { document.getElementById('customModal').style.display = 'none'; }
