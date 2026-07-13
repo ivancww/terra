@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terra資源系統 v2.2.0</title>
+    <title>Terra資源系統 v2.3.0</title>
     <link rel="manifest" href="./manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -48,17 +48,40 @@
         .modal-icon { font-size: 40px; margin-bottom: 10px; display: block; }
         .modal-text { font-size: 15px; color: #333; margin-bottom: 25px; line-height: 1.5; white-space: pre-line; word-break: break-word; }
         .modal-btn { background: var(--brand-color); color: white; border: none; padding: 12px 30px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; }
+
+        /* 🔒 全螢幕登入密碼鎖樣式 */
+        .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--brand-color); z-index: 99999; display: none; justify-content: center; align-items: center; }
+        .login-box { background: white; width: 85%; max-width: 340px; border-radius: 20px; padding: 30px 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .login-logo { width: 60px; height: 60px; border-radius: 12px; margin-bottom: 15px; }
+        .login-title { font-size: 18px; font-weight: bold; color: var(--brand-color); margin-bottom: 20px; }
+        .login-input { width: 100%; padding: 14px; border: 2px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; text-align: center; font-weight: bold; letter-spacing: 2px; margin-bottom: 15px; transition: border-color 0.2s; }
+        .login-input:focus { border-color: var(--brand-color); outline: none; }
+        .login-btn { background: var(--brand-color); color: white; border: none; padding: 14px; width: 100%; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        .login-btn:disabled { background: #888; cursor: not-allowed; }
         
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
 
+<!-- 🔒 密碼登入介面 -->
+<div id="loginOverlay" class="login-overlay">
+    <div class="login-box">
+        <img src="./terra-192.png" alt="Logo" class="login-logo">
+        <div class="login-title">Terra 資源系統 認證</div>
+        <input type="password" id="appPassword" class="login-input" placeholder="請輸入登入密碼" autofocus>
+        <button class="login-btn" id="loginBtn" onclick="verifyAppPassword()">登入系統</button>
+        <p id="loginError" style="color: #dc3545; font-size: 13px; font-weight: bold; margin-top: 10px; display: none;">❌ 密碼不正確，請重試！</p>
+    </div>
+</div>
+
+<!-- 主要系統主體 -->
 <div class="header">
     <button class="back-btn" id="backBtn" onclick="backToDashboard()">⬅️ 主頁</button>
+    <!-- 💡 已移除後台密碼，點擊直接進入後台 -->
     <img src="./terra-192.png" alt="Logo" onclick="goToAdmin()">
     <span id="headerTitle">Terra資源系統</span>
-    <span class="version-tag">v2.2.0</span>
+    <span class="version-tag">v2.3.0</span>
 </div>
 
 <div class="container">
@@ -118,7 +141,93 @@
 </div>
 
 <script>
-    function goToAdmin() { if(prompt("🔑 請輸入管理員密碼：") === "Terra2026") { window.location.href = "./admin.html"; } }
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzoa4HBh9fLLjyc4FX1Z6kdNQ_ipkZRtfhsrptU9K3_rmhRsIkt49JBMstPbfL73L5kSw/exec";
+    let cachedServerPassword = ""; 
+
+    // 🔐 智慧遠端密碼比對邏輯
+    async function checkLoginStatus() {
+        const overlay = document.getElementById('loginOverlay');
+        const localSavedPassword = localStorage.getItem('terra_saved_password');
+
+        try {
+            // 每次開 App 都在背景或前景讀取 Google Sheet 上的當前正確密碼
+            const response = await fetch(`${GAS_URL}?action=checkPassword`);
+            const result = await response.json();
+
+            if (result.success) {
+                cachedServerPassword = result.password.toString().trim();
+                
+                // 核心智慧比對：如果本地存儲的舊密碼跟雲端的一模一樣，免輸入直接放行
+                if (localSavedPassword && localSavedPassword === cachedServerPassword) {
+                    overlay.style.display = 'none';
+                } else {
+                    // 如果雲端改咗新密碼，或者換咗電話（無本地儲存），立刻強制彈出鎖屏叫佢打新密碼
+                    localStorage.removeItem('terra_saved_password'); 
+                    overlay.style.display = 'flex';
+                }
+            } else {
+                fallbackToLocal();
+            }
+        } catch (error) {
+            console.error("Failed to fetch remote password, fallback into local cache.");
+            fallbackToLocal();
+        }
+
+        function fallbackToLocal() {
+            // 斷網或異常時，若有舊密碼則容許先進去
+            if (localSavedPassword) {
+                overlay.style.display = 'none';
+            } else {
+                overlay.style.display = 'flex';
+            }
+        }
+    }
+
+    async function verifyAppPassword() {
+        const inputPass = document.getElementById('appPassword').value.trim();
+        const errorMsg = document.getElementById('loginError');
+        const loginBtn = document.getElementById('loginBtn');
+        const overlay = document.getElementById('loginOverlay');
+        
+        if (!inputPass) return;
+
+        loginBtn.disabled = true;
+        loginBtn.innerText = "驗證中...";
+        errorMsg.style.display = 'none';
+
+        // 如果目前還沒拿到遠端密碼，當場補抓一次
+        if (!cachedServerPassword) {
+            try {
+                const response = await fetch(`${GAS_URL}?action=checkPassword`);
+                const result = await response.json();
+                if (result.success) cachedServerPassword = result.password.toString().trim();
+            } catch (e) {}
+        }
+
+        if (cachedServerPassword && inputPass === cachedServerPassword) {
+            // 驗證成功，將密碼本體寫入手機 LocalStorage 實現永久記住功能
+            localStorage.setItem('terra_saved_password', inputPass);
+            overlay.style.display = 'none';
+        } else {
+            errorMsg.style.display = 'block';
+            errorMsg.innerText = "❌ 密碼不正確，請重試！";
+            document.getElementById('appPassword').value = '';
+            document.getElementById('appPassword').focus();
+        }
+        loginBtn.disabled = false;
+        loginBtn.innerText = "登入系統";
+    }
+
+    document.getElementById('appPassword')?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') verifyAppPassword();
+    });
+
+    // 啟動頁面時即刻執行密碼審查
+    checkLoginStatus();
+
+    // 💡 密碼移走！點擊頂部 Logo 免打密碼直接跳轉管理員後台
+    function goToAdmin() { window.location.href = "./admin.html"; }
+    
     function showModal(icon, text) { document.getElementById('modalIcon').innerText = icon; document.getElementById('modalText').innerText = text; document.getElementById('customModal').style.display = 'flex'; }
     function closeModal() { document.getElementById('customModal').style.display = 'none'; }
 </script>
@@ -149,12 +258,7 @@
     function updateDashboardBadges() {
         const sections = ['Memo', '新聞', '分享', '區會議', '區活動', '銷售工具'];
         const now = new Date();
-        
-        sections.forEach(s => {
-            const dot = document.getElementById(`dot-${s}`);
-            if(dot) dot.style.display = 'none';
-        });
-
+        sections.forEach(s => { const dot = document.getElementById(`dot-${s}`); if(dot) dot.style.display = 'none'; });
         allDocs.forEach(data => {
             if (data.createdAt) {
                 const isNew = (now - data.createdAt.toDate()) < 604800000;
@@ -203,15 +307,9 @@
         const sFilter = document.getElementById('subCatFilter').value;
         listDiv.innerHTML = '';
         let filteredDocs = allDocs.filter(d => d.section === currentSection);
-
         if (mFilter) filteredDocs = filteredDocs.filter(d => d.uploadMonth === mFilter);
         if (currentSection === 'Memo' && sFilter) filteredDocs = filteredDocs.filter(d => d.subCategory === sFilter);
-
-        if(filteredDocs.length === 0) { 
-            listDiv.innerHTML = '<p style="text-align:center; color:#888; padding: 20px 0;">該項目暫無動態上載資料</p>'; 
-            return;
-        }
-
+        if(filteredDocs.length === 0) { listDiv.innerHTML = '<p style="text-align:center; color:#888; padding: 20px 0;">該項目暫無動態上載資料</p>'; return; }
         const now = new Date();
         filteredDocs.forEach(data => {
             const isNew = data.createdAt && (now - data.createdAt.toDate()) < 604800000;
@@ -230,47 +328,6 @@
             });
         });
     }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        const installBanner = document.getElementById('install-prompt-banner');
-        const installText = document.getElementById('install-text');
-        const installBtn = document.getElementById('install-btn');
-        const closeBtn = document.getElementById('close-prompt-btn');
-        
-        let deferredPrompt;
-
-        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => { 
-                installBanner.style.display = 'none'; 
-            });
-        }
-
-        if (!isStandalone) {
-            if (isIOS) {
-                installText.innerHTML = '💡 <b>安裝至主畫面以獲取最佳體驗</b><br><br>1. 點擊瀏覽器下方的 <b>[分享]</b> 圖示<br>2. 選擇 <b>[加入主畫面]</b> 即可輕鬆安裝';
-                installBanner.style.display = 'block';
-            } else {
-                window.addEventListener('beforeinstallprompt', (e) => {
-                    e.preventDefault(); 
-                    deferredPrompt = e; 
-                    
-                    installText.innerHTML = '💡 <b>將系統安裝至手機</b><br>體驗更流暢的操作速度及全螢幕模式。';
-                    installBtn.style.display = 'block';
-                    installBanner.style.display = 'block';
-
-                    installBtn.addEventListener('click', async () => {
-                        installBanner.style.display = 'none';
-                        deferredPrompt.prompt(); 
-                        await deferredPrompt.userChoice;
-                        deferredPrompt = null;
-                    });
-                });
-            }
-        }
-    });
 </script>
 </body>
 </html>
