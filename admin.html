@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terra資源系統 - 管理員後台 v2.8.0</title>
+    <title>Terra資源系統 - 管理員後台 v2.9.0</title>
     <style>
         :root { --brand-color: #0d1b2a; --bg-color: #f4f7f6; --text-main: #333; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg-color); margin: 0; padding-bottom: 40px; -webkit-user-select: none; }
@@ -50,6 +50,7 @@
         .qrcode-title { font-size: 15px; font-weight: bold; color: #b78103; margin-bottom: 12px; }
         .qrcode-box { background: white; padding: 12px; border-radius: 12px; display: inline-block; border: 1px solid #ffeeba; }
         .qrcode-box img { max-width: 140px; height: auto; display: block; margin: 0 auto; }
+        .qrcode-desc { font-size: 12px; color: #b78103; margin-top: 8px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -58,7 +59,7 @@
     <button class="back-btn" id="backBtn" onclick="backToDashboard()">⬅️ 返回</button>
     <img src="./terra-192.png" alt="Logo">
     <span id="headerTitle">Terra管理員後台</span>
-    <span class="version-tag">v2.8.0</span>
+    <span class="version-tag">v2.9.0</span>
 </div>
 
 <div class="container">
@@ -78,8 +79,10 @@
         <div class="qrcode-section">
             <div class="qrcode-title">📲 前台系統快速通道 (QR Code)</div>
             <div class="qrcode-box">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://ivancww.github.io" alt="System QR Code">
+                <!-- 💡 此 QR Code 將會自動識別並生成正確的前台網址 -->
+                <img id="qrCodeImg" src="" alt="System QR Code">
             </div>
+            <div class="qrcode-desc" id="qrCodeDesc">手機/iPad 掃描即可快速返回系統</div>
         </div>
         <a href="./index.html" class="back-link">⬅️ 返回前台主頁</a>
     </div>
@@ -103,13 +106,17 @@
                     <option value="招募">招募</option>
                     <option value="保單服務">保單服務</option>
                     <option value="公司資料">公司資料</option>
+                    <!-- 👇 新增強積金及 Blue Cross 👇 -->
+                    <option value="強積金">強積金</option>
+                    <option value="Blue Cross">Blue Cross</option>
                     <option value="其他">其他</option>
                 </select>
             </div>
 
+            <!-- 💡 標題改為選填 -->
             <div class="form-card">
-                <label>✍️ 標題名稱</label>
-                <input type="text" id="title" placeholder="輸入標題名稱..." required>
+                <label>✍️ 標題名稱 (選填)</label>
+                <input type="text" id="title" placeholder="如留空，將自動使用上載檔案的名稱">
             </div>
 
             <div class="form-card">
@@ -121,12 +128,13 @@
 
             <div class="form-card">
                 <label>🔗 檔案連結 (網址)</label>
-                <input type="url" id="url" placeholder="https:// (若上載 PDF，此欄留空即可)">
+                <input type="url" id="url" placeholder="https:// (若上載下方檔案，此欄留空即可)">
             </div>
 
+            <!-- 💡 支援圖片格式 -->
             <div class="form-card">
-                <label>📄 上載 PDF 檔案 (將取代上方網址)</label>
-                <input type="file" id="pdfFile" accept="application/pdf">
+                <label>📄/🖼️ 上載 PDF 或 圖片檔案 (將取代上方網址)</label>
+                <input type="file" id="uploadFile" accept="application/pdf, image/jpeg, image/png">
             </div>
 
             <button type="submit" class="btn" id="submitBtn">確認發佈資源</button>
@@ -146,7 +154,6 @@
                 <!-- 記錄列表將在此動態載入 -->
             </div>
             
-            <!-- 按月份批量刪除 -->
             <button class="btn btn-danger" id="bulkDeleteBtn" style="display: none;" onclick="bulkDeleteByMonth()">
                 刪除所選月份的全部記錄
             </button>
@@ -154,6 +161,15 @@
     </div>
 
 </div>
+
+<script>
+    // 💡 動態生成正確的 QR Code 網址
+    document.addEventListener("DOMContentLoaded", () => {
+        // 自動讀取當前網址，並將 admin.html 替換成 index.html 以確保正確性
+        const frontendUrl = window.location.href.split('?')[0].replace('admin.html', '') + (window.location.href.includes('admin.html') ? 'index.html' : '');
+        document.getElementById('qrCodeImg').src = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(frontendUrl);
+    });
+</script>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
@@ -207,8 +223,8 @@
             subCat.value = ""; 
         }
         
-        document.getElementById('deleteMonthFilter').value = ""; // 重設篩選
-        loadRecordsForCurrentSection(); // 載入此分類專屬資料
+        document.getElementById('deleteMonthFilter').value = ""; 
+        loadRecordsForCurrentSection(); 
     };
 
     // 返回九宮格
@@ -233,19 +249,16 @@
             const q = query(collection(db, "data"));
             const snapshot = await getDocs(q);
             
-            // 在客戶端過濾屬於目前分類的記錄
             let docsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             docsData = docsData.filter(d => d.section === currentActiveSection);
             
-            // 按月份篩選
             if (mFilter) {
                 docsData = docsData.filter(d => d.uploadMonth === mFilter);
                 bulkBtn.style.display = docsData.length > 0 ? "block" : "none";
             } else {
-                bulkBtn.style.display = "none"; // 顯示所有時不允許一鍵全刪除，防止誤刪
+                bulkBtn.style.display = "none"; 
             }
 
-            // 按時間排序
             docsData.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
             currentDocs = docsData;
 
@@ -310,13 +323,18 @@
         
         const section = document.getElementById('section').value;
         const subCategory = document.getElementById('subCategory').value;
-        const title = document.getElementById('title').value;
         const uploadMonth = document.getElementById('uploadMonth').value;
+        
+        // 💡 讀取檔案及設定智能標題
+        const uploadFile = document.getElementById('uploadFile').files[0];
         let url = document.getElementById('url').value;
-        const pdfFile = document.getElementById('pdfFile').files[0];
+        let titleInput = document.getElementById('title').value.trim();
+        
+        // 智能判斷：如果冇填標題，自動用檔案名；如果兩樣都冇，顯示未命名
+        let finalTitle = titleInput || (uploadFile ? uploadFile.name : "未命名資源");
 
-        if (!url && !pdfFile) {
-            alert("請填寫檔案連結 或 上載 PDF 檔案！");
+        if (!url && !uploadFile) {
+            alert("請填寫檔案連結 或 上載 PDF/圖片檔案！");
             return;
         }
 
@@ -324,10 +342,10 @@
         statusMsg.innerText = "";
 
         try {
-            if (pdfFile) {
-                submitBtn.innerText = "上載 PDF 中...";
-                const storageRef = ref(storage, 'pdfs/' + Date.now() + '_' + pdfFile.name);
-                const snapshot = await uploadBytes(storageRef, pdfFile);
+            if (uploadFile) {
+                submitBtn.innerText = "上載檔案中，請稍候...";
+                const storageRef = ref(storage, 'uploads/' + Date.now() + '_' + uploadFile.name);
+                const snapshot = await uploadBytes(storageRef, uploadFile);
                 url = await getDownloadURL(snapshot.ref); 
             }
 
@@ -335,7 +353,7 @@
             await addDoc(collection(db, "data"), {
                 section: section,
                 subCategory: section === 'Memo' ? subCategory : "",
-                title: title,
+                title: finalTitle,
                 uploadMonth: uploadMonth,
                 url: url,
                 createdAt: serverTimestamp()
@@ -344,7 +362,7 @@
             statusMsg.style.color = "green";
             statusMsg.innerText = "✅ 發佈成功！";
             document.getElementById('uploadForm').reset();
-            document.getElementById('section').value = currentActiveSection; // 保留隱藏值
+            document.getElementById('section').value = currentActiveSection; 
             loadRecordsForCurrentSection(); 
 
         } catch (error) {
