@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terra資源系統 - 管理員後台 v2.7.0</title>
+    <title>Terra資源系統 - 管理員後台 v2.8.0</title>
     <style>
         :root { --brand-color: #0d1b2a; --bg-color: #f4f7f6; --text-main: #333; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg-color); margin: 0; padding-bottom: 40px; -webkit-user-select: none; }
@@ -11,71 +11,88 @@
         .header { background: var(--brand-color); color: white; padding: 18px; text-align: center; font-weight: bold; font-size: 1.2em; position: relative; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
         .header img { width: 28px; height: 28px; margin-right: 10px; border-radius: 4px; }
         .version-tag { font-size: 11px; background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px; position: absolute; right: 15px; }
+        .back-btn { display: none; background: rgba(255,255,255,0.2); color: white; border: none; padding: 6px 12px; border-radius: 4px; position: absolute; left: 15px; cursor: pointer; font-size: 13px; font-weight: bold; }
         
         .container { padding: 20px; max-width: 800px; margin: 0 auto; }
         
-        .admin-grid { display: grid; grid-template-columns: repeat(1, 1fr); gap: 20px; margin-top: 25px; }
-        @media(min-width: 600px) { .admin-grid { grid-template-columns: repeat(2, 1fr); } }
-        
-        .briefcase-card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.03); display: flex; flex-direction: column; justify-content: center; }
-        .full-width-card { grid-column: 1 / -1; }
-        
+        /* 📱 嚴格遵守：前台九宮格格式 */
+        .app-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 20px; }
+        @media(min-width: 600px) { .app-grid { grid-template-columns: repeat(3, 1fr); } }
+        .briefcase-card { background: white; border-radius: 16px; padding: 25px 15px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgba(0,0,0,0.03); position: relative; }
+        .briefcase-card:active { transform: scale(0.95); box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+        .briefcase-icon { font-size: 45px; margin-bottom: 12px; display: block; }
+        .briefcase-title { font-size: 16px; font-weight: bold; color: var(--brand-color); display: flex; align-items: center; gap: 4px; }
+
+        /* 📝 填表與管理區域樣式 */
+        .form-card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.03); margin-bottom: 15px; }
         label { display: block; font-weight: bold; margin-bottom: 10px; color: var(--brand-color); font-size: 15px; display: flex; align-items: center; gap: 6px; }
-        input[type="text"], input[type="url"], select { width: 100%; padding: 14px; border: 1px solid #ccc; border-radius: 12px; box-sizing: border-box; font-size: 14px; background-color: white; font-weight: bold; color: var(--text-main); transition: border 0.2s; }
-        input[type="text"]:focus, input[type="url"]:focus, select:focus { border-color: var(--brand-color); outline: none; }
+        input[type="text"], input[type="url"], select { width: 100%; padding: 14px; border: 1px solid #ccc; border-radius: 12px; box-sizing: border-box; font-size: 14px; background-color: white; font-weight: bold; color: var(--text-main); }
         input[type="file"] { width: 100%; padding: 10px 0; font-size: 14px; color: var(--text-main); }
         
-        .btn { background: var(--brand-color); color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 6px rgba(13,27,42,0.2); transition: all 0.2s; }
-        .btn:active { transform: scale(0.97); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .btn:disabled { background: #ccc; cursor: not-allowed; box-shadow: none; }
-        
-        .back-link { display: block; text-align: center; margin-top: 25px; color: #666; text-decoration: none; font-size: 14px; font-weight: bold; }
-        .back-link:hover { color: var(--brand-color); text-decoration: underline; }
+        .btn { background: var(--brand-color); color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 6px rgba(13,27,42,0.2); }
+        .btn:active { transform: scale(0.97); }
+        .btn:disabled { background: #ccc; cursor: not-allowed; }
+        .btn-danger { background: #dc3545; box-shadow: 0 2px 6px rgba(220,53,69,0.2); margin-top: 10px; }
         #statusMsg { text-align: center; margin-top: 15px; font-weight: bold; font-size: 14px; }
 
-        .qrcode-section { background: #fff9e6; padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 2px solid #ffc107; margin-top: 25px; text-align: center; grid-column: 1 / -1; }
-        .qrcode-title { font-size: 15px; font-weight: bold; color: #b78103; margin-bottom: 12px; }
-        .qrcode-box { background: white; padding: 12px; border-radius: 12px; display: inline-block; border: 1px solid #ffeeba; }
-        .qrcode-box img { max-width: 140px; height: auto; display: block; margin: 0 auto; }
-        .qrcode-desc { font-size: 12px; color: #b78103; margin-top: 8px; font-weight: bold; }
-
-        /* 刪除記錄清單樣式 */
-        .record-list { max-height: 250px; overflow-y: auto; margin-top: 15px; border: 1px solid #eee; border-radius: 8px; background: #fafafa; }
+        /* 🗑️ 刪除記錄清單樣式 */
+        .management-section { margin-top: 30px; border-top: 2px dashed #ccc; padding-top: 20px; }
+        .filter-row { display: flex; gap: 10px; margin-bottom: 15px; }
+        .record-list { max-height: 300px; overflow-y: auto; border: 1px solid #eee; border-radius: 8px; background: #fafafa; }
         .record-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; border-bottom: 1px solid #eee; font-size: 14px; }
-        .record-item:last-child { border-bottom: none; }
         .record-info { display: flex; flex-direction: column; gap: 4px; }
         .record-title { font-weight: bold; color: var(--text-main); }
         .record-tags { font-size: 11px; color: #666; }
         .delete-btn { background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
-        .delete-btn:hover { background: #c82333; }
+        
+        .back-link { display: block; text-align: center; margin-top: 30px; color: #666; text-decoration: none; font-size: 14px; font-weight: bold; }
+        .qrcode-section { background: #fff9e6; padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 2px solid #ffc107; margin-top: 30px; text-align: center; }
+        .qrcode-title { font-size: 15px; font-weight: bold; color: #b78103; margin-bottom: 12px; }
+        .qrcode-box { background: white; padding: 12px; border-radius: 12px; display: inline-block; border: 1px solid #ffeeba; }
+        .qrcode-box img { max-width: 140px; height: auto; display: block; margin: 0 auto; }
     </style>
 </head>
 <body>
 
 <div class="header">
+    <button class="back-btn" id="backBtn" onclick="backToDashboard()">⬅️ 返回</button>
     <img src="./terra-192.png" alt="Logo">
-    <span>Terra管理員後台</span>
-    <span class="version-tag">v2.7.0</span>
+    <span id="headerTitle">Terra管理員後台</span>
+    <span class="version-tag">v2.8.0</span>
 </div>
 
 <div class="container">
-    <form id="uploadForm">
-        <div class="admin-grid">
-            
-            <div class="briefcase-card">
-                <label>📁 1. 選擇主分類</label>
-                <select id="section" required onchange="toggleSubCategory()">
-                    <option value="Memo">📝 Memo</option>
-                    <option value="新聞">📰 新聞通告</option>
-                    <option value="分享">🗣️ 同事分享</option>
-                    <option value="區會議">🗓️ 區會議記錄</option>
-                    <option value="區活動">🎉 區活動花絮</option>
-                    <option value="銷售工具">💼 銷售工具</option>
-                </select>
+    
+    <!-- 🎛️ 畫面一：前台同款九宮格 -->
+    <div id="adminDashboard">
+        <h3 style="color: var(--brand-color); text-align: center; margin-top: 0;">請選擇要管理的分類</h3>
+        <div class="app-grid">
+            <div class="briefcase-card" onclick="openCategoryView('Memo', '📝 Memo')"><span class="briefcase-icon">📝</span><span class="briefcase-title">Memo</span></div>
+            <div class="briefcase-card" onclick="openCategoryView('新聞', '📰 新聞')"><span class="briefcase-icon">📰</span><span class="briefcase-title">新聞通告</span></div>
+            <div class="briefcase-card" onclick="openCategoryView('分享', '🗣️ 分享')"><span class="briefcase-icon">🗣️</span><span class="briefcase-title">同事分享</span></div>
+            <div class="briefcase-card" onclick="openCategoryView('區會議', '🗓️ 區會議')"><span class="briefcase-icon">🗓️</span><span class="briefcase-title">區會議記錄</span></div>
+            <div class="briefcase-card" onclick="openCategoryView('區活動', '🎉 區活動')"><span class="briefcase-icon">🎉</span><span class="briefcase-title">區活動花絮</span></div>
+            <div class="briefcase-card" onclick="openCategoryView('銷售工具', '💼 銷售工具')"><span class="briefcase-icon">💼</span><span class="briefcase-title">銷售工具</span></div>
+        </div>
+        
+        <div class="qrcode-section">
+            <div class="qrcode-title">📲 前台系統快速通道 (QR Code)</div>
+            <div class="qrcode-box">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://ivancww.github.io" alt="System QR Code">
             </div>
+        </div>
+        <a href="./index.html" class="back-link">⬅️ 返回前台主頁</a>
+    </div>
 
-            <div class="briefcase-card" id="subCategoryGroup">
-                <label>🏷️ 2. 選擇 Memo 副分類</label>
+    <!-- 📝 畫面二：獨立分類操作區 (上載 + 刪除) -->
+    <div id="categoryView" style="display: none;">
+        
+        <!-- 上傳表單 -->
+        <form id="uploadForm">
+            <input type="hidden" id="section" value="">
+            
+            <div class="form-card" id="subCategoryGroup">
+                <label>🏷️ 選擇副分類 (Memo專屬)</label>
                 <select id="subCategory">
                     <option value="" disabled selected>請選擇副分類</option>
                     <option value="推廣優惠">推廣優惠</option>
@@ -85,65 +102,62 @@
                     <option value="核保">核保</option>
                     <option value="招募">招募</option>
                     <option value="保單服務">保單服務</option>
-                    <!-- 新增選項 -->
                     <option value="公司資料">公司資料</option>
                     <option value="其他">其他</option>
                 </select>
             </div>
 
-            <div class="briefcase-card">
-                <label>✍️ 3. 標題名稱</label>
-                <input type="text" id="title" placeholder="例如：2026年3月份核保指引" required>
+            <div class="form-card">
+                <label>✍️ 標題名稱</label>
+                <input type="text" id="title" placeholder="輸入標題名稱..." required>
             </div>
 
-            <div class="briefcase-card">
-                <label>📅 4. 歸屬月份</label>
+            <div class="form-card">
+                <label>📅 歸屬月份</label>
                 <select id="uploadMonth" required>
                     <option value="" disabled selected>請選擇月份</option>
                 </select>
             </div>
 
-            <div class="briefcase-card full-width-card">
-                <label>🔗 5. 檔案連結 (外部網址)</label>
+            <div class="form-card">
+                <label>🔗 檔案連結 (網址)</label>
                 <input type="url" id="url" placeholder="https:// (若上載 PDF，此欄留空即可)">
             </div>
 
-            <!-- 👇 補回：PDF 獨立上載框 👇 -->
-            <div class="briefcase-card full-width-card">
-                <label>📄 6. 上載 PDF 檔案 (選填，上載後將自動取代上方連結)</label>
+            <div class="form-card">
+                <label>📄 上載 PDF 檔案 (將取代上方網址)</label>
                 <input type="file" id="pdfFile" accept="application/pdf">
             </div>
 
-            <div class="full-width-card">
-                <button type="submit" class="btn" id="submitBtn">確認發佈資源</button>
-                <div id="statusMsg"></div>
-            </div>
+            <button type="submit" class="btn" id="submitBtn">確認發佈資源</button>
+            <div id="statusMsg"></div>
+        </form>
 
-            <!-- 👇 補回：刪除舊記錄功能 👇 -->
-            <div class="briefcase-card full-width-card">
-                <label>🗑️ 7. 管理與刪除舊記錄</label>
-                <div id="recordList" class="record-list">
-                    <div style="padding: 15px; text-align: center; color: #888;">記錄載入中...</div>
-                </div>
+        <!-- 獨立刪除區域 -->
+        <div class="management-section">
+            <h3 style="color: var(--brand-color); margin-top: 0;">🗑️ 管理本分類資料</h3>
+            <div class="filter-row">
+                <select id="deleteMonthFilter" onchange="loadRecordsForCurrentSection()">
+                    <option value="">顯示所有月份記錄</option>
+                </select>
             </div>
-
-            <div class="qrcode-section">
-                <div class="qrcode-title">📲 前台系統快速通道 (QR Code)</div>
-                <div class="qrcode-box">
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://ivancww.github.io" alt="System QR Code">
-                </div>
-                <div class="qrcode-desc">手機/iPad 掃描黃色通道即可快速返回前台安裝</div>
+            
+            <div id="recordList" class="record-list">
+                <!-- 記錄列表將在此動態載入 -->
             </div>
-
+            
+            <!-- 按月份批量刪除 -->
+            <button class="btn btn-danger" id="bulkDeleteBtn" style="display: none;" onclick="bulkDeleteByMonth()">
+                刪除所選月份的全部記錄
+            </button>
         </div>
-    </form>
+    </div>
 
-    <a href="./index.html" class="back-link">⬅️ 返回前台主頁</a>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, serverTimestamp, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, serverTimestamp, getDocs, deleteDoc, doc, query } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
 
     const app = initializeApp({
@@ -156,8 +170,12 @@
 
     const db = getFirestore(app);
     const storage = getStorage(app);
+    let currentActiveSection = "";
+    let currentDocs = [];
 
+    // 產生月份清單
     const monthSelect = document.getElementById('uploadMonth');
+    const deleteMonthFilter = document.getElementById('deleteMonthFilter');
     const today = new Date();
     for (let i = -2; i <= 12; i++) {
         const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
@@ -165,66 +183,126 @@
         const mm = String(d.getMonth() + 1).padStart(2, '0');
         const monthStr = `${yyyy}年${mm}月`;
         monthSelect.innerHTML += `<option value="${monthStr}">${monthStr}</option>`;
+        deleteMonthFilter.innerHTML += `<option value="${monthStr}">${monthStr}</option>`;
     }
 
-    window.toggleSubCategory = function() {
-        const section = document.getElementById('section').value;
+    // 進入獨立分類介面
+    window.openCategoryView = function(sectionVal, displayName) {
+        currentActiveSection = sectionVal;
+        document.getElementById('adminDashboard').style.display = 'none';
+        document.getElementById('categoryView').style.display = 'block';
+        document.getElementById('backBtn').style.display = 'block';
+        document.getElementById('headerTitle').innerText = '管理：' + displayName;
+        
+        document.getElementById('section').value = sectionVal;
+        
         const subGroup = document.getElementById('subCategoryGroup');
         const subCat = document.getElementById('subCategory');
-        if (section === 'Memo') {
-            subGroup.style.opacity = "1";
-            subGroup.style.pointerEvents = "auto";
+        if (sectionVal === 'Memo') {
+            subGroup.style.display = "block";
             subCat.setAttribute('required', 'true');
         } else {
-            subGroup.style.opacity = "0.4";
-            subGroup.style.pointerEvents = "none";
+            subGroup.style.display = "none";
             subCat.removeAttribute('required');
             subCat.value = ""; 
         }
-    }
+        
+        document.getElementById('deleteMonthFilter').value = ""; // 重設篩選
+        loadRecordsForCurrentSection(); // 載入此分類專屬資料
+    };
 
-    // 載入記錄以供刪除
-    async function loadRecords() {
+    // 返回九宮格
+    window.backToDashboard = function() {
+        document.getElementById('adminDashboard').style.display = 'block';
+        document.getElementById('categoryView').style.display = 'none';
+        document.getElementById('backBtn').style.display = 'none';
+        document.getElementById('headerTitle').innerText = 'Terra管理員後台';
+        document.getElementById('uploadForm').reset();
+        document.getElementById('statusMsg').innerText = "";
+    };
+
+    // 載入該分類的資料
+    window.loadRecordsForCurrentSection = async function() {
         const listDiv = document.getElementById('recordList');
+        const mFilter = document.getElementById('deleteMonthFilter').value;
+        const bulkBtn = document.getElementById('bulkDeleteBtn');
+        
+        listDiv.innerHTML = '<div style="padding: 15px; text-align: center; color: #888;">資料載入中...</div>';
+        
         try {
-            const q = query(collection(db, "data"), orderBy("createdAt", "desc"));
+            const q = query(collection(db, "data"));
             const snapshot = await getDocs(q);
+            
+            // 在客戶端過濾屬於目前分類的記錄
+            let docsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            docsData = docsData.filter(d => d.section === currentActiveSection);
+            
+            // 按月份篩選
+            if (mFilter) {
+                docsData = docsData.filter(d => d.uploadMonth === mFilter);
+                bulkBtn.style.display = docsData.length > 0 ? "block" : "none";
+            } else {
+                bulkBtn.style.display = "none"; // 顯示所有時不允許一鍵全刪除，防止誤刪
+            }
+
+            // 按時間排序
+            docsData.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
+            currentDocs = docsData;
+
             listDiv.innerHTML = "";
-            if (snapshot.empty) {
-                listDiv.innerHTML = '<div style="padding: 15px; text-align: center; color: #888;">目前沒有任何資源記錄</div>';
+            if (docsData.length === 0) {
+                listDiv.innerHTML = '<div style="padding: 15px; text-align: center; color: #888;">此分類/月份沒有任何記錄</div>';
                 return;
             }
-            snapshot.forEach(docSnap => {
-                const data = docSnap.data();
-                const id = docSnap.id;
+
+            docsData.forEach(data => {
                 const tag = data.subCategory ? ` | ${data.subCategory}` : '';
                 listDiv.innerHTML += `
                     <div class="record-item">
                         <div class="record-info">
                             <span class="record-title">${data.title}</span>
-                            <span class="record-tags">${data.section}${tag} | ${data.uploadMonth}</span>
+                            <span class="record-tags">${data.uploadMonth}${tag}</span>
                         </div>
-                        <button type="button" class="delete-btn" onclick="deleteRecord('${id}')">刪除</button>
+                        <button type="button" class="delete-btn" onclick="deleteSingleRecord('${data.id}')">刪除</button>
                     </div>
                 `;
             });
         } catch (error) {
-            listDiv.innerHTML = '<div style="padding: 15px; text-align: center; color: red;">載入記錄失敗</div>';
+            listDiv.innerHTML = '<div style="padding: 15px; text-align: center; color: red;">載入失敗</div>';
         }
     }
 
-    // 執行刪除動作
-    window.deleteRecord = async function(id) {
-        if(confirm("⚠️ 確定要刪除這筆資源記錄嗎？刪除後前台將同步消失。")) {
+    // 刪除單筆記錄
+    window.deleteSingleRecord = async function(id) {
+        if(confirm("⚠️ 確定要刪除這筆資料嗎？")) {
             try {
                 await deleteDoc(doc(db, "data", id));
-                loadRecords(); // 重新載入列表
+                loadRecordsForCurrentSection();
             } catch (error) {
-                alert("刪除失敗，請檢查網絡連線。");
+                alert("刪除失敗");
             }
         }
     }
 
+    // 按月份批量刪除
+    window.bulkDeleteByMonth = async function() {
+        const mFilter = document.getElementById('deleteMonthFilter').value;
+        if (!mFilter || currentDocs.length === 0) return;
+        
+        if(confirm(`🚨 警告：確定要刪除「${currentActiveSection}」於 ${mFilter} 的【全部 ${currentDocs.length} 筆】記錄嗎？此動作無法復原。`)) {
+            try {
+                for (let docData of currentDocs) {
+                    await deleteDoc(doc(db, "data", docData.id));
+                }
+                alert("✅ 該月記錄已全數刪除");
+                loadRecordsForCurrentSection();
+            } catch (error) {
+                alert("部分或全部刪除失敗");
+            }
+        }
+    }
+
+    // 上載表單處理
     document.getElementById('uploadForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const submitBtn = document.getElementById('submitBtn');
@@ -237,23 +315,20 @@
         let url = document.getElementById('url').value;
         const pdfFile = document.getElementById('pdfFile').files[0];
 
-        // 檢查是否兩者都留白
         if (!url && !pdfFile) {
             alert("請填寫檔案連結 或 上載 PDF 檔案！");
             return;
         }
 
         submitBtn.disabled = true;
-        submitBtn.innerText = "資源處理中，請稍候...";
         statusMsg.innerText = "";
 
         try {
-            // 如果有上載 PDF，優先處理上載
             if (pdfFile) {
-                submitBtn.innerText = "上載 PDF 檔案中...";
+                submitBtn.innerText = "上載 PDF 中...";
                 const storageRef = ref(storage, 'pdfs/' + Date.now() + '_' + pdfFile.name);
                 const snapshot = await uploadBytes(storageRef, pdfFile);
-                url = await getDownloadURL(snapshot.ref); // 獲取下載連結取代原本的 URL
+                url = await getDownloadURL(snapshot.ref); 
             }
 
             submitBtn.innerText = "寫入資料庫中...";
@@ -267,23 +342,19 @@
             });
 
             statusMsg.style.color = "green";
-            statusMsg.innerText = "✅ 發佈成功！前台已即時同步更新。";
+            statusMsg.innerText = "✅ 發佈成功！";
             document.getElementById('uploadForm').reset();
-            toggleSubCategory();
-            loadRecords(); // 更新刪除清單
+            document.getElementById('section').value = currentActiveSection; // 保留隱藏值
+            loadRecordsForCurrentSection(); 
 
         } catch (error) {
-            console.error(error);
             statusMsg.style.color = "red";
-            statusMsg.innerText = "❌ 發佈失敗，請檢查網絡連線或聯絡管理員。";
+            statusMsg.innerText = "❌ 發佈失敗";
         } finally {
             submitBtn.disabled = false;
             submitBtn.innerText = "確認發佈資源";
         }
     });
-
-    toggleSubCategory();
-    loadRecords(); // 網頁載入時執行一次
 </script>
 
 </body>
