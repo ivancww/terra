@@ -3,43 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terra資源系統 - 管理員後台 v2.4.0</title>
+    <title>Terra資源系統 - 管理員後台 v2.5.0</title>
     <style>
         :root { --brand-color: #0d1b2a; --bg-color: #f4f7f6; --text-main: #333; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg-color); margin: 0; padding-bottom: 40px; -webkit-user-select: none; }
         
-        /* 頂部導航列 (完美對齊前台) */
+        /* 頂部 Header 對齊前台風格 */
         .header { background: var(--brand-color); color: white; padding: 18px; text-align: center; font-weight: bold; font-size: 1.2em; position: relative; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
         .header img { width: 28px; height: 28px; margin-right: 10px; border-radius: 4px; }
         .version-tag { font-size: 11px; background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px; position: absolute; right: 15px; }
-        .back-btn { display: none; background: rgba(255,255,255,0.2); color: white; border: none; padding: 6px 12px; border-radius: 4px; position: absolute; left: 15px; cursor: pointer; font-size: 13px; font-weight: bold; }
         
         .container { padding: 20px; max-width: 800px; margin: 0 auto; }
         
-        /* 📱 後台專屬九宮格主頁 */
-        .app-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 10px; }
-        @media(min-width: 600px) { .app-grid { grid-template-columns: repeat(3, 1fr); } }
-        .briefcase-card { background: white; border-radius: 16px; padding: 25px 15px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgba(0,0,0,0.03); position: relative; }
-        .briefcase-card:active { transform: scale(0.95); box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-        .briefcase-icon { font-size: 45px; margin-bottom: 12px; display: block; }
-        .briefcase-title { font-size: 16px; font-weight: bold; color: var(--brand-color); display: flex; align-items: center; gap: 4px; }
-
-        /* 📝 填表區域樣式 */
-        .form-grid { display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 20px; }
-        .form-card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.03); display: flex; flex-direction: column; justify-content: center; }
+        /* 🎛️ v2.1.0 卡片式表單排版 */
+        .admin-grid { display: grid; grid-template-columns: repeat(1, 1fr); gap: 20px; margin-top: 25px; }
+        @media(min-width: 600px) { .admin-grid { grid-template-columns: repeat(2, 1fr); } }
+        
+        .briefcase-card { 
+            background: white; border-radius: 16px; padding: 20px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.03);
+            display: flex; flex-direction: column; justify-content: center;
+        }
+        
+        .full-width-card { grid-column: 1 / -1; }
+        
         label { display: block; font-weight: bold; margin-bottom: 10px; color: var(--brand-color); font-size: 15px; display: flex; align-items: center; gap: 6px; }
-        input[type="text"], input[type="url"], select { width: 100%; padding: 14px; border: 1px solid #ccc; border-radius: 12px; box-sizing: border-box; font-size: 14px; background-color: white; font-weight: bold; color: var(--text-main); }
         
-        .btn { background: var(--brand-color); color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 6px rgba(13,27,42,0.2); }
-        .btn:active { transform: scale(0.97); }
-        .btn:disabled { background: #ccc; cursor: not-allowed; }
-        #statusMsg { text-align: center; margin-top: 15px; font-weight: bold; font-size: 14px; }
+        input[type="text"], input[type="url"], select { 
+            width: 100%; padding: 14px; border: 1px solid #ccc; border-radius: 12px; box-sizing: border-box; font-size: 14px; 
+            background-color: white; font-weight: bold; color: var(--text-main); transition: border 0.2s;
+        }
+        input[type="text"]:focus, input[type="url"]:focus, select:focus { border-color: var(--brand-color); outline: none; }
         
-        .back-link { display: block; text-align: center; margin-top: 30px; color: #666; text-decoration: none; font-size: 14px; font-weight: bold; }
+        /* 統一發佈按鈕質感 */
+        .btn { 
+            background: var(--brand-color); color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; 
+            font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 6px rgba(13,27,42,0.2); transition: all 0.2s; 
+        }
+        .btn:active { transform: scale(0.97); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .btn:disabled { background: #ccc; cursor: not-allowed; box-shadow: none; }
+        
+        .back-link { display: block; text-align: center; margin-top: 25px; color: #666; text-decoration: none; font-size: 14px; font-weight: bold; }
         .back-link:hover { color: var(--brand-color); text-decoration: underline; }
+        #statusMsg { text-align: center; margin-top: 15px; font-weight: bold; font-size: 14px; }
 
-        /* 💛 黃色外框 QR Code */
-        .qrcode-section { background: #fff9e6; padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 2px solid #ffc107; margin-top: 30px; text-align: center; }
+        /* 💛 經典黃色外框 QR Code 區塊 */
+        .qrcode-section { 
+            background: #fff9e6; padding: 20px; border-radius: 16px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 2px solid #ffc107; 
+            margin-top: 25px; text-align: center; grid-column: 1 / -1;
+        }
         .qrcode-title { font-size: 15px; font-weight: bold; color: #b78103; margin-bottom: 12px; }
         .qrcode-box { background: white; padding: 12px; border-radius: 12px; display: inline-block; border: 1px solid #ffeeba; }
         .qrcode-box img { max-width: 140px; height: auto; display: block; margin: 0 auto; }
@@ -49,92 +62,92 @@
 <body>
 
 <div class="header">
-    <button class="back-btn" id="backBtn" onclick="backToDashboard()">⬅️ 分類</button>
     <img src="./terra-192.png" alt="Logo">
-    <span id="headerTitle">Terra管理員後台</span>
-    <span class="version-tag">v2.4.0</span>
+    <span>Terra管理員後台</span>
+    <span class="version-tag">v2.5.0</span>
 </div>
 
 <div class="container">
-    
-    <!-- 🎛️ 畫面一：九宮格主畫面 -->
-    <div id="adminDashboard">
-        <h3 style="color: var(--brand-color); margin-top: 0; text-align: center;">請選擇要發佈資源的分類</h3>
-        <div class="app-grid">
-            <div class="briefcase-card" onclick="openUploadForm('Memo', '📝 Memo')"><span class="briefcase-icon">📝</span><span class="briefcase-title">Memo</span></div>
-            <div class="briefcase-card" onclick="openUploadForm('新聞', '📰 新聞')"><span class="briefcase-icon">📰</span><span class="briefcase-title">新聞通告</span></div>
-            <div class="briefcase-card" onclick="openUploadForm('分享', '🗣️ 分享')"><span class="briefcase-icon">🗣️</span><span class="briefcase-title">同事分享</span></div>
-            <div class="briefcase-card" onclick="openUploadForm('區會議', '🗓️ 區會議')"><span class="briefcase-icon">🗓️</span><span class="briefcase-title">區會議記錄</span></div>
-            <div class="briefcase-card" onclick="openUploadForm('區活動', '🎉 區活動')"><span class="briefcase-icon">🎉</span><span class="briefcase-title">區活動花絮</span></div>
-            <div class="briefcase-card" onclick="openUploadForm('銷售工具', '💼 銷售工具')"><span class="briefcase-icon">💼</span><span class="briefcase-title">銷售工具</span></div>
-        </div>
-
-        <div class="qrcode-section">
-            <div class="qrcode-title">📲 前台系統快速通道 (QR Code)</div>
-            <div class="qrcode-box">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://ivancww.github.io" alt="System QR Code">
+    <form id="uploadForm">
+        <div class="admin-grid">
+            
+            <!-- 卡片 1：選擇主分類 -->
+            <div class="briefcase-card">
+                <label>📁 1. 選擇主分類</label>
+                <select id="section" required onchange="toggleSubCategory()">
+                    <option value="Memo">📝 Memo</option>
+                    <option value="新聞">📰 新聞通告</option>
+                    <option value="分享">🗣️ 同事分享</option>
+                    <option value="區會議">🗓️ 區會議記錄</option>
+                    <option value="區活動">🎉 區活動花絮</option>
+                    <option value="銷售工具">💼 銷售工具</option>
+                </select>
             </div>
-            <div class="qrcode-desc">手機/iPad 掃描黃色通道即可快速返回前台系統</div>
-        </div>
-        
-        <a href="./index.html" class="back-link">⬅️ 放棄發佈並返回前台主頁</a>
-    </div>
 
-    <!-- 📝 畫面二：專屬上載表格 (預設隱藏) -->
-    <div id="uploadView" style="display: none;">
-        <form id="uploadForm">
-            <!-- 隱藏的主分類記錄欄位 -->
-            <input type="hidden" id="section" value="">
-
-            <div class="form-grid">
-                <!-- 副分類 (只有撳 Memo 先會彈出嚟) -->
-                <div class="form-card" id="subCategoryGroup">
-                    <label>🏷️ 1. 選擇副分類</label>
-                    <select id="subCategory">
-                        <option value="" disabled selected>請選擇副分類</option>
-                        <option value="推廣優惠">推廣優惠</option>
-                        <option value="公司獎賞">公司獎賞</option>
-                        <option value="公司會議">公司會議</option>
-                        <option value="產品更新資料">產品更新資料</option>
-                        <option value="核保">核保</option>
-                        <option value="招募">招募</option>
-                        <option value="保單服務">保單服務</option>
-                        <option value="公司資料">公司資料</option>
-                        <option value="其他">其他</option>
-                    </select>
-                </div>
-
-                <div class="form-card">
-                    <label>✍️ 2. 標題名稱</label>
-                    <input type="text" id="title" placeholder="例如：最新公司醫療產品核保指引" required>
-                </div>
-
-                <div class="form-card">
-                    <label>📅 3. 歸屬月份</label>
-                    <select id="uploadMonth" required>
-                        <option value="" disabled selected>請選擇月份</option>
-                    </select>
-                </div>
-
-                <div class="form-card">
-                    <label>🔗 4. 檔案連結 (Google Drive / OneDrive / PDF)</label>
-                    <input type="url" id="url" placeholder="https://" required>
-                </div>
-
-                <div>
-                    <button type="submit" class="btn" id="submitBtn">確認發佈資源</button>
-                    <div id="statusMsg"></div>
-                </div>
+            <!-- 卡片 2：選擇 Memo 副分類 -->
+            <div class="briefcase-card" id="subCategoryGroup">
+                <label>🏷️ 2. 選擇 Memo 副分類</label>
+                <select id="subCategory">
+                    <option value="" disabled selected>請選擇副分類</option>
+                    <option value="推廣優惠">推廣優惠</option>
+                    <option value="公司獎賞">公司獎賞</option>
+                    <option value="公司會議">公司會議</option>
+                    <option value="產品更新資料">產品更新資料</option>
+                    <option value="核保">核保</option>
+                    <option value="招募">招募</option>
+                    <option value="保單服務">保單服務</option>
+                    <!-- 👇 新增的兩個選項 👇 -->
+                    <option value="公司資料">公司資料</option>
+                    <option value="其他">其他</option>
+                </select>
             </div>
-        </form>
-    </div>
 
+            <!-- 卡片 3：標題名稱 -->
+            <div class="briefcase-card">
+                <label>✍️ 3. 標題名稱</label>
+                <input type="text" id="title" placeholder="例如：2026年3月份核保指引" required>
+            </div>
+
+            <!-- 卡片 4：歸屬月份 -->
+            <div class="briefcase-card">
+                <label>📅 4. 歸屬月份</label>
+                <select id="uploadMonth" required>
+                    <option value="" disabled selected>請選擇月份</option>
+                </select>
+            </div>
+
+            <!-- 卡片 5：檔案連結 (整列寬度) -->
+            <div class="briefcase-card full-width-card">
+                <label>🔗 5. 檔案連結 (Google Drive / OneDrive / PDF 網址)</label>
+                <input type="url" id="url" placeholder="https://" required>
+            </div>
+
+            <!-- 按鈕卡片 (整列寬度) -->
+            <div class="full-width-card">
+                <button type="submit" class="btn" id="submitBtn">確認發佈資源</button>
+                <div id="statusMsg"></div>
+            </div>
+
+            <!-- 黃色高質感外框 QR Code 區塊 -->
+            <div class="qrcode-section">
+                <div class="qrcode-title">📲 前台系統快速通道 (QR Code)</div>
+                <div class="qrcode-box">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://ivancww.github.io" alt="System QR Code">
+                </div>
+                <div class="qrcode-desc">手機/iPad 掃描黃色通道即可快速返回前台安裝</div>
+            </div>
+
+        </div>
+    </form>
+
+    <a href="./index.html" class="back-link">⬅️ 返回前台主頁</a>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
+    // Firebase 設定
     const app = initializeApp({
         apiKey: "AIzaSyCUUqWRecCdnKB7ReNLuSoiDZEs7q9oSJ4",
         authDomain: "terra-team.firebaseapp.com",
@@ -145,7 +158,7 @@
 
     const db = getFirestore(app);
 
-    // 動態生成月份
+    // 動態生成月份清單 (過去 12 個月至未來 2 個月)
     const monthSelect = document.getElementById('uploadMonth');
     const today = new Date();
     for (let i = -2; i <= 12; i++) {
@@ -156,50 +169,31 @@
         monthSelect.innerHTML += `<option value="${monthStr}">${monthStr}</option>`;
     }
 
-    // 🎛️ 打開專屬表格邏輯
-    window.openUploadForm = function(sectionVal, displayName) {
-        document.getElementById('adminDashboard').style.display = 'none';
-        document.getElementById('uploadView').style.display = 'block';
-        document.getElementById('backBtn').style.display = 'block';
-        
-        // 更改頂部標題
-        document.getElementById('headerTitle').innerText = '發佈至：' + displayName;
-        
-        // 寫入隱藏欄位
-        document.getElementById('section').value = sectionVal;
-        
-        // 判斷是否顯示副分類
+    // 控制副分類顯示與否
+    window.toggleSubCategory = function() {
+        const section = document.getElementById('section').value;
         const subGroup = document.getElementById('subCategoryGroup');
         const subCat = document.getElementById('subCategory');
-        if (sectionVal === 'Memo') {
-            subGroup.style.display = "flex";
+        
+        if (section === 'Memo') {
+            subGroup.style.opacity = "1";
+            subGroup.style.pointerEvents = "auto";
             subCat.setAttribute('required', 'true');
         } else {
-            subGroup.style.display = "none";
+            subGroup.style.opacity = "0.4";
+            subGroup.style.pointerEvents = "none";
             subCat.removeAttribute('required');
             subCat.value = ""; 
         }
-    };
+    }
 
-    // ⬅️ 返回九宮格邏輯
-    window.backToDashboard = function() {
-        document.getElementById('adminDashboard').style.display = 'block';
-        document.getElementById('uploadView').style.display = 'none';
-        document.getElementById('backBtn').style.display = 'none';
-        document.getElementById('headerTitle').innerText = 'Terra管理員後台';
-        
-        // 清空表格
-        document.getElementById('uploadForm').reset();
-        document.getElementById('statusMsg').innerText = "";
-    };
-
-    // 發佈上載邏輯
+    // 處理表單提交
     document.getElementById('uploadForm').addEventListener('submit', async (e) => {
         e.preventDefault();
+        
         const submitBtn = document.getElementById('submitBtn');
         const statusMsg = document.getElementById('statusMsg');
         
-        // 讀取隱藏嘅主分類
         const section = document.getElementById('section').value;
         const subCategory = document.getElementById('subCategory').value;
         const title = document.getElementById('title').value;
@@ -208,6 +202,7 @@
 
         submitBtn.disabled = true;
         submitBtn.innerText = "發佈中，請稍候...";
+        statusMsg.innerText = "";
 
         try {
             await addDoc(collection(db, "data"), {
@@ -218,21 +213,25 @@
                 url: url,
                 createdAt: serverTimestamp()
             });
+
             statusMsg.style.color = "green";
             statusMsg.innerText = "✅ 發佈成功！前台已即時同步更新。";
-            
-            // 成功後延遲 1.5 秒自動彈返出去九宮格
-            setTimeout(() => {
-                backToDashboard();
-            }, 1500);
+            document.getElementById('uploadForm').reset();
+            toggleSubCategory();
 
         } catch (error) {
+            console.error("Error adding document: ", error);
             statusMsg.style.color = "red";
-            statusMsg.innerText = "❌ 發佈失敗，請檢查網絡。";
+            statusMsg.innerText = "❌ 發佈失敗，請檢查網絡連線或聯絡管理員。";
+        } finally {
             submitBtn.disabled = false;
             submitBtn.innerText = "確認發佈資源";
         }
     });
+
+    // 初始化執行
+    toggleSubCategory();
 </script>
+
 </body>
 </html>
