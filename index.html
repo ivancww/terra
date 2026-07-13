@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terra資源系統 v2.6.0</title>
+    <title>Terra資源系統 v2.9.0</title>
     <link rel="manifest" href="./manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -74,10 +74,9 @@
 
 <div class="header">
     <button class="back-btn" id="backBtn" onclick="backToDashboard()">⬅️ 主頁</button>
-    <!-- 💡 直接進入後台，無密碼 -->
     <img src="./terra-192.png" alt="Logo" onclick="goToAdmin()">
     <span id="headerTitle">Terra資源系統</span>
-    <span class="version-tag">v2.6.0</span>
+    <span class="version-tag">v2.9.0</span>
 </div>
 
 <div class="container">
@@ -103,8 +102,10 @@
                 <option value="核保">核保</option>
                 <option value="招募">招募</option>
                 <option value="保單服務">保單服務</option>
-                <!-- 👇 補回新增的選項 👇 -->
                 <option value="公司資料">公司資料</option>
+                <!-- 👇 新增強積金及 Blue Cross 👇 -->
+                <option value="強積金">強積金</option>
+                <option value="Blue Cross">Blue Cross</option>
                 <option value="其他">其他</option>
             </select>
         </div>
@@ -204,7 +205,6 @@
 
     checkLoginStatus();
 
-    // 💡 已徹底移除密碼要求，直接進入後台
     function goToAdmin() { window.location.href = "./admin.html"; }
     
     function showModal(icon, text) { document.getElementById('modalIcon').innerText = icon; document.getElementById('modalText').innerText = text; document.getElementById('customModal').style.display = 'flex'; }
@@ -315,7 +315,6 @@
         const closeBtn = document.getElementById('close-prompt-btn');
         
         let deferredPrompt;
-
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
