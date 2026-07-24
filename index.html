@@ -3,205 +3,262 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terra資源系統 - 管理員後台 v3.2.0</title>
+    <title>Terra資源系統 v3.3.0</title>
+    <link rel="manifest" href="./manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="./terra-192.png">
+    
     <style>
         :root { --brand-color: #0d1b2a; --bg-color: #f4f7f6; --text-main: #333; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg-color); margin: 0; padding-bottom: 40px; -webkit-user-select: none; }
-        
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg-color); margin: 0; padding-bottom: 30px; -webkit-user-select: none; }
         .header { background: var(--brand-color); color: white; padding: 18px; text-align: center; font-weight: bold; font-size: 1.2em; position: relative; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
-        .header img { width: 28px; height: 28px; margin-right: 10px; border-radius: 4px; }
+        .header img { width: 28px; height: 28px; margin-right: 10px; border-radius: 4px; cursor: pointer; }
         .version-tag { font-size: 11px; background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px; position: absolute; right: 15px; }
         .back-btn { display: none; background: rgba(255,255,255,0.2); color: white; border: none; padding: 6px 12px; border-radius: 4px; position: absolute; left: 15px; cursor: pointer; font-size: 13px; font-weight: bold; }
+        .container { padding: 20px; max-width: 1100px; margin: 0 auto; }
         
-        .container { padding: 20px; max-width: 900px; margin: 0 auto; }
-        
-        .app-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 15px; }
-        @media(min-width: 600px) { .app-grid { grid-template-columns: repeat(3, 1fr); } }
-        .briefcase-card { background: white; border-radius: 16px; padding: 20px 10px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgba(0,0,0,0.03); position: relative; }
-        .briefcase-card:active { transform: scale(0.95); }
-        .briefcase-icon { font-size: 40px; margin-bottom: 8px; display: block; }
-        .briefcase-title { font-size: 15px; font-weight: bold; color: var(--brand-color); display: flex; align-items: center; gap: 4px; }
-        .order-badge { position: absolute; top: 8px; left: 10px; background: #eef2f5; color: #666; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 6px; }
+        /* ⚖️ 50% 50% 左右對分佈局 */
+        .main-split-container { display: flex; flex-direction: column; gap: 20px; }
+        @media(min-width: 768px) {
+            .main-split-container { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; align-items: start; }
+        }
 
-        .form-card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.03); margin-bottom: 15px; }
-        label { display: block; font-weight: bold; margin-bottom: 10px; color: var(--brand-color); font-size: 15px; display: flex; align-items: center; gap: 6px; }
-        input[type="text"], input[type="number"], input[type="url"], textarea, select { width: 100%; padding: 14px; border: 1px solid #ccc; border-radius: 12px; box-sizing: border-box; font-size: 14px; background-color: white; font-weight: bold; color: var(--text-main); }
-        textarea { height: 80px; resize: vertical; }
-        input[type="file"] { width: 100%; padding: 10px 0; font-size: 14px; color: var(--text-main); }
-        
-        .btn { background: var(--brand-color); color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 6px rgba(13,27,42,0.2); }
-        .btn:active { transform: scale(0.97); }
-        .btn:disabled { background: #ccc; cursor: not-allowed; }
-        .btn-danger { background: #dc3545; box-shadow: 0 2px 6px rgba(220,53,69,0.2); }
-        .btn-success { background: #28a745; margin-top: 10px; }
-        #statusMsg { text-align: center; margin-top: 15px; font-weight: bold; font-size: 14px; }
+        /* 🌟 左邊：Terra 願景/使命/目標 區塊 */
+        .vm-card { background: white; border-radius: 16px; padding: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.03); border-top: 5px solid var(--brand-color); position: relative; }
+        .vm-title { font-size: 18px; font-weight: bold; color: var(--brand-color); margin-bottom: 15px; text-align: center; border-bottom: 1px solid #eee; padding-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        /* 💡 願景修改專屬 Logo */
+        .vm-edit-logo { width: 22px; height: 22px; cursor: pointer; border-radius: 4px; transition: transform 0.2s; }
+        .vm-edit-logo:active { transform: scale(0.9); }
+        .vm-section { margin-bottom: 15px; }
+        .vm-section h4 { margin: 0 0 5px 0; color: #b78103; font-size: 15px; display: flex; align-items: center; gap: 6px; }
+        .vm-section p { margin: 0; font-size: 14px; color: #444; line-height: 1.6; white-space: pre-line; }
 
-        .admin-sub-box { background: #eef2f5; padding: 15px; border-radius: 12px; margin-top: 20px; border: 1px dashed #b0bec5; }
-        .custom-cat-item { display: flex; justify-content: space-between; align-items: center; background: white; padding: 10px 15px; border-radius: 8px; margin-top: 8px; font-weight: bold; gap: 10px; }
-        .order-input-sm { width: 60px !important; padding: 6px !important; text-align: center; margin: 0 !important; }
-
-        .management-section { margin-top: 30px; border-top: 2px dashed #ccc; padding-top: 20px; }
-        .filter-row { display: flex; gap: 10px; margin-bottom: 15px; }
-        .record-list { max-height: 300px; overflow-y: auto; border: 1px solid #eee; border-radius: 8px; background: #fafafa; }
-        .record-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; border-bottom: 1px solid #eee; font-size: 14px; }
-        .record-info { display: flex; flex-direction: column; gap: 4px; }
-        .record-title { font-weight: bold; color: var(--text-main); }
-        .record-tags { font-size: 11px; color: #666; }
-        .delete-btn { background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        /* 📱 右邊：垂直單欄列表排列 */
+        .app-vertical-list { display: flex; flex-direction: column; gap: 12px; }
+        .briefcase-row-card { background: white; border-radius: 14px; padding: 16px 20px; box-shadow: 0 3px 10px rgba(0,0,0,0.04); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; display: flex; align-items: center; gap: 15px; border: 1px solid rgba(0,0,0,0.03); position: relative; }
+        .briefcase-row-card:active { transform: scale(0.98); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .briefcase-icon { font-size: 28px; flex-shrink: 0; }
+        .briefcase-title { font-size: 16px; font-weight: bold; color: var(--brand-color); flex: 1; display: flex; align-items: center; gap: 8px; }
+        .arrow-right { color: #ccc; font-size: 18px; font-weight: bold; }
         
-        .back-link { display: block; text-align: center; margin-top: 30px; color: #666; text-decoration: none; font-size: 14px; font-weight: bold; }
-        .qrcode-section { background: #fff9e6; padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 2px solid #ffc107; margin-top: 30px; text-align: center; }
-        .qrcode-title { font-size: 15px; font-weight: bold; color: #b78103; margin-bottom: 12px; }
-        .qrcode-box { background: white; padding: 12px; border-radius: 12px; display: inline-block; border: 1px solid #ffeeba; }
-        .qrcode-box img { max-width: 140px; height: auto; display: block; margin: 0 auto; }
+        .dash-badge { color: #dc3545; font-size: 11px; font-weight: bold; background: #ffeeba; padding: 1px 5px; border-radius: 4px; display: none; animation: pulse 2s infinite; }
+        .page-view { display: none; }
+        .page-title { font-size: 20px; font-weight: bold; color: var(--brand-color); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--brand-color); padding-bottom: 8px; }
+        .filter-section { display: flex; gap: 10px; margin-bottom: 15px; }
+        .filter-section select { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 14px; background-color: white; font-weight: bold; }
+        .card { background: white; padding: 16px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; justify-content: space-between; align-items: center; }
+        .card-info h4 { margin: 0 0 6px 0; font-size: 16px; color: var(--text-main); }
+        .card-info span { font-size: 11px; color: #666; background: #eef2f5; padding: 3px 8px; border-radius: 12px; margin-right: 5px; font-weight: bold; }
+        .new-badge { color: #dc3545; font-size: 11px; font-weight: bold; background: #ffeeba; padding: 2px 6px; border-radius: 4px; margin-left: 5px; animation: pulse 2s infinite; }
+        .open-btn { background: var(--brand-color); color: white; border: none; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: bold; white-space: nowrap; box-shadow: 0 2px 6px rgba(13,27,42,0.2); }
+        .tools-list { display: flex; flex-direction: column; gap: 15px; margin-top: 10px; }
+        .tool-item { background: white; padding: 15px; border-radius: 14px; display: flex; align-items: center; text-decoration: none; box-shadow: 0 4px 10px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.02); }
+        .tool-logo { width: 45px; height: 45px; border-radius: 10px; margin-right: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); object-fit: cover; }
+        .tool-info { flex: 1; }
+        .tool-name { font-size: 16px; font-weight: bold; color: var(--brand-color); margin: 0 0 4px 0; }
+        .tool-desc { font-size: 12px; color: #777; margin: 0; }
+        .tool-arrow { color: #ccc; font-size: 20px; font-weight: bold; margin-left: 10px; }
+
+        .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--brand-color); z-index: 99999; display: none; justify-content: center; align-items: center; }
+        .login-box { background: white; width: 85%; max-width: 340px; border-radius: 20px; padding: 30px 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .login-logo { width: 60px; height: 60px; border-radius: 12px; margin-bottom: 15px; }
+        .login-title { font-size: 18px; font-weight: bold; color: var(--brand-color); margin-bottom: 20px; }
+        .login-input { width: 100%; padding: 14px; border: 2px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; text-align: center; font-weight: bold; letter-spacing: 2px; margin-bottom: 15px; transition: border-color 0.2s; }
+        .login-input:focus { border-color: var(--brand-color); outline: none; }
+        .login-btn { background: var(--brand-color); color: white; border: none; padding: 14px; width: 100%; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        
+        /* 願景編輯 Modal */
+        .vm-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10000; justify-content: center; align-items: center; }
+        .vm-modal-box { background: white; width: 90%; max-width: 400px; border-radius: 16px; padding: 25px 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .vm-modal-box h3 { margin: 0 0 15px 0; color: var(--brand-color); text-align: center; }
+        .vm-modal-box input, .vm-modal-box textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 14px; margin-bottom: 10px; font-family: inherit; }
+        .vm-modal-box textarea { height: 70px; resize: vertical; }
+        .vm-modal-btn { background: #28a745; color: white; border: none; padding: 12px; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 10px; }
+        .vm-modal-cancel { background: #f0f0f0; color: #555; border: none; padding: 10px; border-radius: 8px; font-size: 14px; cursor: pointer; width: 100%; }
+        
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
 
+<!-- GAS 登入鎖 (開App時用，保留不變) -->
+<div id="loginOverlay" class="login-overlay">
+    <div class="login-box">
+        <img src="./terra-192.png" alt="Logo" class="login-logo">
+        <div class="login-title">Terra 資源系統 認證</div>
+        <input type="password" id="appPassword" class="login-input" placeholder="請輸入登入密碼" autofocus>
+        <button class="login-btn" id="loginBtn" onclick="verifyAppPassword()">登入系統</button>
+        <p id="loginError" style="color: #dc3545; font-size: 13px; font-weight: bold; margin-top: 10px; display: none;">❌ 密碼不正確，請重試！</p>
+    </div>
+</div>
+
+<!-- 願景編輯視窗 -->
+<div id="vmEditModal" class="vm-modal-overlay">
+    <div class="vm-modal-box">
+        <h3>🌍 修改核心方向</h3>
+        <input type="text" id="vmVisionInput" placeholder="🎯 願景 (Vision)...">
+        <textarea id="vmMissionInput" placeholder="🚀 使命 (Mission)..."></textarea>
+        <textarea id="vmTargetInput" placeholder="🏆 目標 (Target)..."></textarea>
+        <button class="vm-modal-btn" onclick="submitVisionMission()">儲存並即時發佈</button>
+        <button class="vm-modal-cancel" onclick="closeVisionEditor()">取消</button>
+    </div>
+</div>
+
 <div class="header">
-    <button class="back-btn" id="backBtn" onclick="backToDashboard()">⬅️ 返回</button>
-    <img src="./terra-192.png" alt="Logo">
-    <span id="headerTitle">Terra管理員後台</span>
-    <span class="version-tag">v3.2.0</span>
+    <button class="back-btn" id="backBtn" onclick="backToDashboard()">⬅️ 主頁</button>
+    <!-- 💡 點擊直入後台，恢復無密碼設定 -->
+    <img src="./terra-192.png" alt="Logo" onclick="goToAdmin()">
+    <span id="headerTitle">Terra資源系統</span>
+    <span class="version-tag">v3.3.0</span>
 </div>
 
 <div class="container">
     
-    <div id="adminDashboard">
-        <h3 style="color: var(--brand-color); text-align: center; margin-top: 0;">請選擇要管理的分類卡片</h3>
+    <div id="dashboardView" class="main-split-container">
         
-        <div class="app-grid" id="adminGridArea"></div>
-
-        <div class="admin-sub-box">
-            <h4 style="margin:0 0 10px 0; color:var(--brand-color);">🌍 修改 Terra 願景 / 使命 / 目標</h4>
-            <div style="display:flex; flex-direction:column; gap:10px;">
-                <input type="text" id="vmVisionInput" placeholder="🎯 願景 (Vision)...">
-                <textarea id="vmMissionInput" placeholder="🚀 使命 (Mission)..."></textarea>
-                <textarea id="vmTargetInput" placeholder="🏆 目標 (Target)..."></textarea>
-                <button class="btn btn-success" onclick="saveVisionMission()">儲存並發佈核心方向</button>
+        <!-- 左欄：願景 / 使命 / 目標 -->
+        <div class="vm-card">
+            <!-- 💡 在這裡加入 Terra Logo，點擊會要求 leo wong 密碼 -->
+            <div class="vm-title">
+                🌍 Terra 團隊核心方向 
+                <img src="./terra-192.png" alt="Edit" class="vm-edit-logo" onclick="openVisionEditor()">
+            </div>
+            <div class="vm-section">
+                <h4>🎯 願景 (Vision)</h4>
+                <p id="dispVision">載入中...</p>
+            </div>
+            <div class="vm-section">
+                <h4>🚀 使命 (Mission)</h4>
+                <p id="dispMission">載入中...</p>
+            </div>
+            <div class="vm-section">
+                <h4>🏆 目標 (Target)</h4>
+                <p id="dispTarget">載入中...</p>
             </div>
         </div>
 
-        <div class="admin-sub-box">
-            <h4 style="margin:0 0 10px 0; color:var(--brand-color);">➕ 新增自訂卡片 (自訂排列次序)</h4>
-            <div style="display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap;">
-                <select id="newCatEmoji" style="width:100px;">
-                    <option value="📌">📌 標記</option>
-                    <option value="🎓">🎓 培訓</option>
-                    <option value="🚀">🚀 火箭</option>
-                    <option value="⭐">⭐ 星星</option>
-                    <option value="💡">💡 靈感</option>
-                    <option value="📊">📊 統計</option>
-                    <option value="🏆">🏆 獎項</option>
-                    <option value="📈">📈 業績</option>
-                    <option value="🔥">🔥 熱門</option>
-                    <option value="📁">📁 檔案</option>
-                </select>
-                <input type="text" id="newCatName" placeholder="卡片名稱 (如：招募資訊)" style="flex:1;">
-                <input type="number" id="newCatOrder" placeholder="排序數字" value="8" style="width:100px;">
-            </div>
-            <button class="btn" onclick="addCustomCategory()">確認新增卡片</button>
+        <!-- 右欄：垂直單欄卡片列表 -->
+        <div class="app-vertical-list" id="cardListArea"></div>
 
-            <h5 style="margin:15px 0 5px 0; color:#555;">已建立的自訂卡片次序管理：</h5>
-            <div id="customCategoryList">載入中...</div>
-        </div>
-        
-        <div class="qrcode-section">
-            <div class="qrcode-title">📲 前台系統快速通道 (QR Code)</div>
-            <div class="qrcode-box"><img id="qrCodeImg" src="" alt="System QR Code"></div>
-        </div>
-        <a href="./index.html" class="back-link">⬅️ 返回前台主頁</a>
     </div>
 
-    <div id="categoryView" style="display: none;">
-        
-        <form id="uploadForm">
-            <input type="hidden" id="section" value="">
-            
-            <div class="form-card" id="subCategoryGroup">
-                <label>🏷️ 選擇副分類 (Memo專屬)</label>
-                <select id="subCategory">
-                    <option value="" disabled selected>請選擇副分類</option>
-                    <option value="推廣優惠">推廣優惠</option>
-                    <option value="公司獎賞">公司獎賞</option>
-                    <option value="公司會議">公司會議</option>
-                    <option value="產品更新資料">產品更新資料</option>
-                    <option value="核保">核保</option>
-                    <option value="招募">招募</option>
-                    <option value="保單服務">保單服務</option>
-                    <option value="公司資料">公司資料</option>
-                    <option value="強積金">強積金</option>
-                    <option value="Blue Cross">Blue Cross</option>
-                    <option value="其他">其他</option>
-                </select>
-            </div>
-
-            <div class="form-card">
-                <label>✍️ 標題名稱 (選填)</label>
-                <input type="text" id="title" placeholder="如留空，將自動使用上載檔案的名稱">
-            </div>
-
-            <div class="form-card">
-                <label>📅 歸屬月份</label>
-                <select id="uploadMonth" required>
-                    <option value="" disabled selected>請選擇月份</option>
-                </select>
-            </div>
-
-            <div class="form-card">
-                <label>🔗 檔案連結 (網址)</label>
-                <input type="url" id="url" placeholder="https:// (若上載下方檔案，此欄留空即可)">
-            </div>
-
-            <div class="form-card">
-                <label>📄/🖼️ 上載 PDF 或 圖片檔案 (可一次選取最多 10 張/份)</label>
-                <input type="file" id="uploadFile" accept="application/pdf, image/jpeg, image/png" multiple>
-            </div>
-
-            <button type="submit" class="btn" id="submitBtn">確認發佈資源</button>
-            <div id="statusMsg"></div>
-        </form>
-
-        <div class="management-section">
-            <h3 style="color: var(--brand-color); margin-top: 0;">🗑️ 管理本分類資料</h3>
-            <div class="filter-row">
-                <select id="deleteMonthFilter" onchange="loadRecordsForCurrentSection()">
-                    <option value="">顯示所有月份記錄</option>
-                </select>
-            </div>
-            
-            <div id="recordList" class="record-list"></div>
-            
-            <button class="btn btn-danger" id="bulkDeleteBtn" style="display: none; margin-top:10px;" onclick="bulkDeleteByMonth()">
-                刪除所選月份的全部記錄及檔案
-            </button>
+    <!-- 📄 分類內頁檢視 -->
+    <div id="pageView" class="page-view">
+        <div class="page-title" id="pageTitleDisplay">分類名稱</div>
+        <div class="filter-section" id="filterArea">
+            <select id="monthFilter" onchange="renderList()"><option value="">所有月份搜尋</option></select>
+            <select id="subCatFilter" onchange="renderList()" style="display: none;">
+                <option value="">所有副分類</option>
+                <option value="推廣優惠">推廣優惠</option>
+                <option value="公司獎賞">公司獎賞</option>
+                <option value="公司會議">公司會議</option>
+                <option value="產品更新資料">產品更新資料</option>
+                <option value="核保">核保</option>
+                <option value="招募">招募</option>
+                <option value="保單服務">保單服務</option>
+                <option value="公司資料">公司資料</option>
+                <option value="強積金">強積金</option>
+                <option value="Blue Cross">Blue Cross</option>
+                <option value="其他">其他</option>
+            </select>
         </div>
-    </div>
 
+        <div id="staticTools" style="display: none;" class="tools-list">
+            <a href="https://ivancww.github.io/DA" target="_blank" class="tool-item">
+                <img src="./icon-192.png" class="tool-logo" onerror="this.src='./terra-192.png'">
+                <div class="tool-info"><p class="tool-name">DA 系統</p><p class="tool-desc">DA 專屬應用試算工具</p></div>
+                <span class="tool-arrow">›</span>
+            </a>
+            <a href="https://ivancww.github.io/avawealth" target="_blank" class="tool-item"><img src="./wealth-192.png" class="tool-logo"><div class="tool-info"><p class="tool-name">財富傳承系統</p><p class="tool-desc">資產傳承與信託規劃簡報 PWA 工具</p></div><span class="tool-arrow">›</span></a>
+            <a href="https://ivancww.github.io/CIApp" target="_blank" class="tool-item"><img src="./CI-192.png" class="tool-logo"><div class="tool-info"><p class="tool-name">危疾計數機</p><p class="tool-desc">最新危疾保障保費及保額即時試算</p></div><span class="tool-arrow">›</span></a>
+            <a href="https://ivancww.github.io/medicalclaims" target="_blank" class="tool-item"><img src="./medical-192.png" class="tool-logo"><div class="tool-info"><p class="tool-name">醫療理賠指引</p><p class="tool-desc">核心高端醫療理賠流程與程序備忘</p></div><span class="tool-arrow">›</span></a>
+            <hr style="border:0; height:1px; background:#ddd; margin: 20px 0;">
+        </div>
+
+        <div id="dynamicList">資料載入中...</div>
+    </div>
 </div>
 
 <script>
-    // 🔐 登入權限檢查 (密碼：leo wong)
-    if (sessionStorage.getItem('admin_auth') !== 'true') {
-        const pwd = prompt("🔑 請輸入管理員密碼：");
-        if (pwd === "leo wong") {
-            sessionStorage.setItem('admin_auth', 'true');
-        } else {
-            alert("❌ 密碼不正確！");
-            window.location.href = "./index.html";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzoa4HBh9fLLjyc4FX1Z6kdNQ_ipkZRtfhsrptU9K3_rmhRsIkt49JBMstPbfL73L5kSw/exec";
+    let cachedServerPassword = ""; 
+
+    async function checkLoginStatus() {
+        const overlay = document.getElementById('loginOverlay');
+        const localSavedPassword = localStorage.getItem('terra_saved_password');
+        try {
+            const response = await fetch(`${GAS_URL}?action=checkPassword`);
+            const result = await response.json();
+            if (result.success) {
+                cachedServerPassword = result.password.toString().trim();
+                if (localSavedPassword && localSavedPassword === cachedServerPassword) {
+                    overlay.style.display = 'none';
+                } else {
+                    localStorage.removeItem('terra_saved_password'); 
+                    overlay.style.display = 'flex';
+                }
+            } else { fallbackToLocal(); }
+        } catch (error) { fallbackToLocal(); }
+
+        function fallbackToLocal() {
+            if (localSavedPassword) { overlay.style.display = 'none'; } 
+            else { overlay.style.display = 'flex'; }
         }
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
-        const frontendUrl = window.location.href.split('?')[0].replace('admin.html', '') + (window.location.href.includes('admin.html') ? 'index.html' : '');
-        document.getElementById('qrCodeImg').src = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(frontendUrl);
+    async function verifyAppPassword() {
+        const inputPass = document.getElementById('appPassword').value.trim();
+        const errorMsg = document.getElementById('loginError');
+        const loginBtn = document.getElementById('loginBtn');
+        const overlay = document.getElementById('loginOverlay');
+        
+        if (!inputPass) return;
+        loginBtn.disabled = true;
+        loginBtn.innerText = "驗證中...";
+        errorMsg.style.display = 'none';
+
+        if (!cachedServerPassword) {
+            try {
+                const response = await fetch(`${GAS_URL}?action=checkPassword`);
+                const result = await response.json();
+                if (result.success) cachedServerPassword = result.password.toString().trim();
+            } catch (e) {}
+        }
+
+        if (cachedServerPassword && inputPass === cachedServerPassword) {
+            localStorage.setItem('terra_saved_password', inputPass);
+            overlay.style.display = 'none';
+        } else {
+            errorMsg.style.display = 'block';
+            errorMsg.innerText = "❌ 密碼不正確，請重試！";
+            document.getElementById('appPassword').value = '';
+            document.getElementById('appPassword').focus();
+        }
+        loginBtn.disabled = false;
+        loginBtn.innerText = "登入系統";
+    }
+
+    document.getElementById('appPassword')?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') verifyAppPassword();
     });
+
+    checkLoginStatus();
+
+    // 💡 恢復：點擊頂部 Logo 直接進入後台
+    function goToAdmin() {
+        window.location.href = "./admin.html";
+    }
+
+    // 💡 關閉願景編輯器
+    function closeVisionEditor() {
+        document.getElementById('vmEditModal').style.display = 'none';
+    }
 </script>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, serverTimestamp, getDocs, deleteDoc, doc, setDoc, getDoc, updateDoc, query, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-    import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
+    import { getFirestore, collection, query, orderBy, onSnapshot, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
     const app = initializeApp({
         apiKey: "AIzaSyCUUqWRecCdnKB7ReNLuSoiDZEs7q9oSJ4",
@@ -212,10 +269,10 @@
     });
 
     const db = getFirestore(app);
-    const storage = getStorage(app);
-    let currentActiveSection = "";
-    let currentDocs = [];
+    let allDocs = [];
     let customCategories = [];
+    let currentSection = 'Memo';
+    let currentVMData = { vision: "", mission: "", target: "" };
 
     const defaultCategories = [
         { name: 'Memo', icon: '📝', display: '📝 Memo', order: 1 },
@@ -227,303 +284,145 @@
         { name: 'Training', icon: '🎓', display: '🎓 Training', order: 7 }
     ];
 
-    // 初始化月份
-    const monthSelect = document.getElementById('uploadMonth');
-    const deleteMonthFilter = document.getElementById('deleteMonthFilter');
-    const today = new Date();
-    for (let i = -2; i <= 12; i++) {
-        const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
-        const yyyy = d.getFullYear();
-        const mm = String(d.getMonth() + 1).padStart(2, '0');
-        const monthStr = `${yyyy}年${mm}月`;
-        monthSelect.innerHTML += `<option value="${monthStr}">${monthStr}</option>`;
-        deleteMonthFilter.innerHTML += `<option value="${monthStr}">${monthStr}</option>`;
-    }
-
-    // 1. 載入願景使命
-    getDoc(doc(db, "config", "vision_mission")).then(snap => {
-        if(snap.exists()){
-            const d = snap.data();
-            document.getElementById('vmVisionInput').value = d.vision || "";
-            document.getElementById('vmMissionInput').value = d.mission || "";
-            document.getElementById('vmTargetInput').value = d.target || "";
+    // 1. 實時監聽願景，並儲存到變數供修改用
+    onSnapshot(doc(db, "config", "vision_mission"), (docSnap) => {
+        if (docSnap.exists()) {
+            currentVMData = docSnap.data();
+            document.getElementById('dispVision').innerText = currentVMData.vision || "尚未設定願景";
+            document.getElementById('dispMission').innerText = currentVMData.mission || "尚未設定使命";
+            document.getElementById('dispTarget').innerText = currentVMData.target || "尚未設定目標";
         }
     });
 
-    window.saveVisionMission = async function() {
+    // 💡 點擊前台 Terra Logo 打開編輯器並驗證密碼
+    window.openVisionEditor = function() {
+        const pwd = prompt("🔑 請輸入修改願景密碼：");
+        if (pwd === "leo wong") {
+            document.getElementById('vmVisionInput').value = currentVMData.vision || "";
+            document.getElementById('vmMissionInput').value = currentVMData.mission || "";
+            document.getElementById('vmTargetInput').value = currentVMData.target || "";
+            document.getElementById('vmEditModal').style.display = 'flex';
+        } else if (pwd !== null) {
+            alert("❌ 密碼不正確！");
+        }
+    };
+
+    // 💡 儲存願景到 Firebase
+    window.submitVisionMission = async function() {
         const vision = document.getElementById('vmVisionInput').value.trim();
         const mission = document.getElementById('vmMissionInput').value.trim();
         const target = document.getElementById('vmTargetInput').value.trim();
         try {
             await setDoc(doc(db, "config", "vision_mission"), { vision, mission, target, updatedAt: serverTimestamp() });
-            alert("✅ 願景、使命及目標已成功同步更新！");
+            closeVisionEditor();
+            alert("✅ 核心方向已成功更新並發佈！");
         } catch(e) { alert("儲存失敗"); }
     };
 
-    // 2. 監聽與渲染自訂卡片 (排序)
+    // 2. 實時監聽自訂卡片
     onSnapshot(collection(db, "categories"), (snapshot) => {
-        customCategories = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-        renderAdminGrid();
-        renderCustomCatManageList();
+        customCategories = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderCardList();
     });
 
-    function renderAdminGrid() {
-        const grid = document.getElementById('adminGridArea');
-        grid.innerHTML = "";
-        const full = [...defaultCategories];
-        customCategories.forEach(c => full.push({ 
-            name: c.name, 
-            icon: c.icon || '📌', 
-            display: `${c.icon || '📌'} ${c.name}`,
-            order: parseInt(c.order) || 99
-        }));
+    // 3. 實時監聽 資源數據
+    onSnapshot(query(collection(db, "data"), orderBy("createdAt", "desc")), (snapshot) => {
+        allDocs = snapshot.docs.map(doc => doc.data());
+        updateMonthFilterOptions();
+        renderList();
+        updateDashboardBadges(); 
+    });
 
-        full.sort((a, b) => a.order - b.order);
-
-        full.forEach(item => {
-            grid.innerHTML += `
-                <div class="briefcase-card" onclick="openCategoryView('${item.name}', '${item.display}')">
-                    <span class="order-badge">序號: ${item.order}</span>
-                    <span class="briefcase-icon">${item.icon}</span>
-                    <span class="briefcase-title">${item.name}</span>
-                </div>
-            `;
-        });
-    }
-
-    function renderCustomCatManageList() {
-        const container = document.getElementById('customCategoryList');
-        if (customCategories.length === 0) {
-            container.innerHTML = '<div style="font-size:12px; color:#888;">暫無自訂卡片</div>';
-            return;
-        }
-        container.innerHTML = "";
+    function renderCardList() {
+        const listArea = document.getElementById('cardListArea');
+        listArea.innerHTML = "";
+        const fullList = [...defaultCategories];
         customCategories.forEach(c => {
-            container.innerHTML += `
-                <div class="custom-cat-item">
-                    <span>${c.icon} ${c.name}</span>
-                    <div>
-                        <label style="display:inline-flex; align-items:center; gap:4px; font-size:12px; margin:0;">序號: 
-                            <input type="number" class="order-input-sm" id="ord-${c.id}" value="${c.order || 8}">
-                        </label>
-                        <button type="button" class="btn" style="padding:4px 8px; font-size:11px; width:auto; display:inline-block;" onclick="updateCategoryOrder('${c.id}')">修改序號</button>
-                        <button type="button" class="delete-btn" onclick="deleteCustomCategory('${c.id}', '${c.name}')">刪除</button>
-                    </div>
+            fullList.push({ name: c.name, icon: c.icon || '📌', display: `${c.icon || '📌'} ${c.name}`, order: parseInt(c.order) || 99 });
+        });
+        fullList.sort((a, b) => a.order - b.order);
+
+        fullList.forEach(item => {
+            listArea.innerHTML += `
+                <div class="briefcase-row-card" onclick="openSection('${item.name}', '${item.display}')">
+                    <span class="briefcase-icon">${item.icon}</span>
+                    <span class="briefcase-title">${item.name} <span id="dot-${item.name}" class="dash-badge">🔴 NEW</span></span>
+                    <span class="arrow-right">›</span>
                 </div>
             `;
         });
+        updateDashboardBadges();
     }
 
-    window.addCustomCategory = async function() {
-        const name = document.getElementById('newCatName').value.trim();
-        const icon = document.getElementById('newCatEmoji').value;
-        const order = parseInt(document.getElementById('newCatOrder').value) || 8;
-        if(!name) { alert("請輸入卡片名稱！"); return; }
-        
-        try {
-            await addDoc(collection(db, "categories"), { name, icon, order, createdAt: serverTimestamp() });
-            document.getElementById('newCatName').value = "";
-            alert("✅ 新增自訂卡片成功！前台已即時依序號同步。");
-        } catch(e) { alert("新增卡片失敗"); }
-    };
+    function updateDashboardBadges() {
+        const now = new Date();
+        allDocs.forEach(data => {
+            if (data.createdAt) {
+                const isNew = (now - data.createdAt.toDate()) < 604800000;
+                const dot = document.getElementById(`dot-${data.section}`);
+                if(dot) dot.style.display = isNew ? 'inline-block' : 'none';
+            }
+        });
+    }
 
-    window.updateCategoryOrder = async function(id) {
-        const newOrder = parseInt(document.getElementById(`ord-${id}`).value) || 8;
-        try {
-            await updateDoc(doc(db, "categories", id), { order: newOrder });
-            alert("✅ 卡片次序已更新！");
-        } catch(e) { alert("修改排序失敗"); }
-    };
+    function updateMonthFilterOptions() {
+        const monthSelect = document.getElementById('monthFilter');
+        const currentSelection = monthSelect.value;
+        const uniqueMonths = [...new Set(allDocs.map(doc => doc.uploadMonth).filter(m => m))].sort().reverse();
+        monthSelect.innerHTML = '<option value="">所有月份搜尋</option>';
+        uniqueMonths.forEach(m => monthSelect.innerHTML += `<option value="${m}">${m}</option>`);
+        monthSelect.value = currentSelection;
+    }
 
-    window.deleteCustomCategory = async function(id, name) {
-        if(confirm(`⚠️ 確定要刪除自訂卡片「${name}」嗎？`)) {
-            try {
-                await deleteDoc(doc(db, "categories", id));
-            } catch(e) { alert("刪除卡片失敗"); }
-        }
-    };
-
-    window.openCategoryView = function(sectionVal, displayName) {
-        currentActiveSection = sectionVal;
-        document.getElementById('adminDashboard').style.display = 'none';
-        document.getElementById('categoryView').style.display = 'block';
+    window.openSection = function(sectionName, displayName) {
+        currentSection = sectionName;
+        document.getElementById('dashboardView').style.display = 'none';
+        document.getElementById('pageView').style.display = 'block';
         document.getElementById('backBtn').style.display = 'block';
-        document.getElementById('headerTitle').innerText = '管理：' + displayName;
-        document.getElementById('section').value = sectionVal;
-        
-        const subGroup = document.getElementById('subCategoryGroup');
-        const subCat = document.getElementById('subCategory');
-        if (sectionVal === 'Memo') {
-            subGroup.style.display = "block";
-            subCat.setAttribute('required', 'true');
-        } else {
-            subGroup.style.display = "none";
-            subCat.removeAttribute('required');
-            subCat.value = ""; 
-        }
-        document.getElementById('deleteMonthFilter').value = ""; 
-        loadRecordsForCurrentSection(); 
+        document.getElementById('pageTitleDisplay').innerText = displayName;
+        document.getElementById('headerTitle').innerText = sectionName;
+        document.getElementById('staticTools').style.display = (sectionName === '銷售工具') ? 'flex' : 'none';
+        document.getElementById('subCatFilter').style.display = (sectionName === 'Memo') ? 'block' : 'none';
+        document.getElementById('filterArea').style.display = (sectionName === '銷售工具') ? 'none' : 'flex';
+        document.getElementById('monthFilter').value = "";
+        document.getElementById('subCatFilter').value = "";
+        renderList();
     };
 
     window.backToDashboard = function() {
-        document.getElementById('adminDashboard').style.display = 'block';
-        document.getElementById('categoryView').style.display = 'none';
+        document.getElementById('dashboardView').style.display = 'grid';
+        document.getElementById('pageView').style.display = 'none';
         document.getElementById('backBtn').style.display = 'none';
-        document.getElementById('headerTitle').innerText = 'Terra管理員後台';
-        document.getElementById('uploadForm').reset();
-        document.getElementById('statusMsg').innerText = "";
+        document.getElementById('headerTitle').innerText = 'Terra資源系統';
     };
 
-    window.loadRecordsForCurrentSection = async function() {
-        const listDiv = document.getElementById('recordList');
-        const mFilter = document.getElementById('deleteMonthFilter').value;
-        const bulkBtn = document.getElementById('bulkDeleteBtn');
-        listDiv.innerHTML = '<div style="padding:15px; text-align:center; color:#888;">資料載入中...</div>';
-        
-        try {
-            const q = query(collection(db, "data"));
-            const snapshot = await getDocs(q);
-            let docsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            docsData = docsData.filter(d => d.section === currentActiveSection);
-            
-            if (mFilter) {
-                docsData = docsData.filter(d => d.uploadMonth === mFilter);
-                bulkBtn.style.display = docsData.length > 0 ? "block" : "none";
-            } else { bulkBtn.style.display = "none"; }
+    window.renderList = function() {
+        const listDiv = document.getElementById('dynamicList');
+        const mFilter = document.getElementById('monthFilter').value;
+        const sFilter = document.getElementById('subCatFilter').value;
+        listDiv.innerHTML = '';
+        let filteredDocs = allDocs.filter(d => d.section === currentSection);
+        if (mFilter) filteredDocs = filteredDocs.filter(d => d.uploadMonth === mFilter);
+        if (currentSection === 'Memo' && sFilter) filteredDocs = filteredDocs.filter(d => d.subCategory === sFilter);
+        if(filteredDocs.length === 0) { listDiv.innerHTML = '<p style="text-align:center; color:#888; padding: 20px 0;">該項目暫無動態上載資料</p>'; return; }
+        const now = new Date();
+        filteredDocs.forEach(data => {
+            const isNew = data.createdAt && (now - data.createdAt.toDate()) < 604800000;
+            const newBadge = isNew ? `<span class="new-badge">❗新更新</span>` : '';
+            const mTag = data.uploadMonth ? `<span>${data.uploadMonth}</span>` : '';
+            const sTag = data.subCategory ? `<span>${data.subCategory}</span>` : '';
+            listDiv.innerHTML += `<div class="card"><div class="card-info"><h4>${data.title} ${newBadge}</h4><div>${mTag} ${sTag}</div></div><a href="${data.url}" target="_blank" class="open-btn">開啟</a></div>`;
+        });
+    }
 
-            docsData.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
-            currentDocs = docsData;
-
-            listDiv.innerHTML = "";
-            if (docsData.length === 0) {
-                listDiv.innerHTML = '<div style="padding:15px; text-align:center; color:#888;">此分類/月份沒有任何記錄</div>';
-                return;
-            }
-
-            docsData.forEach(data => {
-                const tag = data.subCategory ? ` | ${data.subCategory}` : '';
-                listDiv.innerHTML += `
-                    <div class="record-item">
-                        <div class="record-info">
-                            <span class="record-title">${data.title}</span>
-                            <span class="record-tags">${data.uploadMonth}${tag}</span>
-                        </div>
-                        <button type="button" class="delete-btn" onclick="deleteSingleRecord('${data.id}')">刪除</button>
-                    </div>
-                `;
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').then(reg => {
+            reg.addEventListener('updatefound', () => {
+                const newWorker = reg.installing;
+                newWorker.addEventListener('statechange', () => { if (newWorker.state === 'activated') window.location.reload(); });
             });
-        } catch (error) { listDiv.innerHTML = '<div style="padding:15px; text-align:center; color:red;">載入失敗</div>'; }
+        });
     }
-
-    // 🔥 刪除單筆記錄 (同步銷毀 Storage 實體檔案)
-    window.deleteSingleRecord = async function(id) {
-        const docData = currentDocs.find(d => d.id === id);
-        if(confirm("⚠️ 確定要刪除這筆資料嗎？（若包含圖片/PDF，將一併從 Firebase Storage 徹底銷毀）")) {
-            try {
-                if (docData && docData.url && docData.url.includes('firebasestorage.googleapis.com')) {
-                    const fileRef = ref(storage, docData.url);
-                    await deleteObject(fileRef).catch(e => console.log("雲端無檔案或已被刪除", e));
-                }
-                await deleteDoc(doc(db, "data", id));
-                loadRecordsForCurrentSection();
-            } catch (error) { alert("刪除失敗"); }
-        }
-    }
-
-    // 🔥 按月份批量刪除 (同步銷毀所有實體檔案)
-    window.bulkDeleteByMonth = async function() {
-        const mFilter = document.getElementById('deleteMonthFilter').value;
-        if (!mFilter || currentDocs.length === 0) return;
-        
-        if(confirm(`🚨 警告：確定要刪除「${currentActiveSection}」於 ${mFilter} 的【全部 ${currentDocs.length} 筆】記錄嗎？`)) {
-            try {
-                for (let docData of currentDocs) {
-                    if (docData.url && docData.url.includes('firebasestorage.googleapis.com')) {
-                        const fileRef = ref(storage, docData.url);
-                        await deleteObject(fileRef).catch(e => console.log("雲端無檔案", e));
-                    }
-                    await deleteDoc(doc(db, "data", docData.id));
-                }
-                alert("✅ 該月記錄及實體檔案已全數銷毀");
-                loadRecordsForCurrentSection();
-            } catch (error) { alert("部分刪除失敗"); }
-        }
-    }
-
-    // 多檔案上載 (最多10張)
-    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const submitBtn = document.getElementById('submitBtn');
-        const statusMsg = document.getElementById('statusMsg');
-        
-        const section = document.getElementById('section').value;
-        const subCategory = document.getElementById('subCategory').value;
-        const uploadMonth = document.getElementById('uploadMonth').value;
-        const files = document.getElementById('uploadFile').files;
-        let urlInput = document.getElementById('url').value;
-        let titleInput = document.getElementById('title').value.trim();
-
-        if (!urlInput && files.length === 0) {
-            alert("請填寫檔案連結 或 選擇檔案上載！");
-            return;
-        }
-
-        if (files.length > 10) {
-            alert("⚠️ 一次最多只支援上載 10 張圖片/檔案，請重新選擇！");
-            return;
-        }
-
-        submitBtn.disabled = true;
-        statusMsg.innerText = "";
-
-        try {
-            if (files.length > 0) {
-                for (let i = 0; i < files.length; i++) {
-                    const file = files[i];
-                    submitBtn.innerText = `上載中 (${i + 1}/${files.length})...`;
-                    
-                    const storageRef = ref(storage, 'uploads/' + Date.now() + '_' + file.name);
-                    const snapshot = await uploadBytes(storageRef, file);
-                    const downloadUrl = await getDownloadURL(snapshot.ref);
-
-                    let itemTitle = titleInput ? (files.length > 1 ? `${titleInput} (${i + 1})` : titleInput) : file.name;
-
-                    await addDoc(collection(db, "data"), {
-                        section: section,
-                        subCategory: section === 'Memo' ? subCategory : "",
-                        title: itemTitle,
-                        uploadMonth: uploadMonth,
-                        url: downloadUrl,
-                        createdAt: serverTimestamp()
-                    });
-                }
-            } else {
-                submitBtn.innerText = "寫入資料庫中...";
-                await addDoc(collection(db, "data"), {
-                    section: section,
-                    subCategory: section === 'Memo' ? subCategory : "",
-                    title: titleInput || "未命名資源",
-                    uploadMonth: uploadMonth,
-                    url: urlInput,
-                    createdAt: serverTimestamp()
-                });
-            }
-
-            statusMsg.style.color = "green";
-            statusMsg.innerText = "✅ 發佈成功！";
-            document.getElementById('uploadForm').reset();
-            document.getElementById('section').value = currentActiveSection; 
-            loadRecordsForCurrentSection(); 
-
-        } catch (error) {
-            console.error(error);
-            statusMsg.style.color = "red";
-            statusMsg.innerText = "❌ 發佈失敗";
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.innerText = "確認發佈資源";
-        }
-    });
 </script>
 </body>
 </html>
