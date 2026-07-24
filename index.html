@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terra資源系統 v3.4.0</title>
+    <title>Terra資源系統 v3.5.0</title>
     <link rel="manifest" href="./manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -67,7 +67,6 @@
         .login-input:focus { border-color: var(--brand-color); outline: none; }
         .login-btn { background: var(--brand-color); color: white; border: none; padding: 14px; width: 100%; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; }
         
-        /* 願景編輯 Modal */
         .vm-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10000; justify-content: center; align-items: center; }
         .vm-modal-box { background: white; width: 90%; max-width: 400px; border-radius: 16px; padding: 25px 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
         .vm-modal-box h3 { margin: 0 0 15px 0; color: var(--brand-color); text-align: center; }
@@ -106,7 +105,7 @@
     <button class="back-btn" id="backBtn" onclick="backToDashboard()">⬅️ 主頁</button>
     <img src="./terra-192.png" alt="Logo" onclick="goToAdmin()">
     <span id="headerTitle">Terra資源系統</span>
-    <span class="version-tag">v3.4.0</span>
+    <span class="version-tag">v3.5.0</span>
 </div>
 
 <div class="container">
@@ -260,18 +259,19 @@
 
     const db = getFirestore(app);
     let allDocs = [];
-    let customCategories = [];
+    let mergedCategories = [];
     let currentSection = 'Memo';
     let currentVMData = { vision: "", mission: "", target: "" };
 
-    const defaultCategories = [
-        { name: 'Memo', icon: '📝', display: '📝 Memo', order: 1 },
-        { name: '新聞', icon: '📰', display: '📰 新聞', order: 2 },
-        { name: '分享', icon: '🗣️', display: '🗣️ 分享', order: 3 },
-        { name: '區會議', icon: '🗓️', display: '🗓️ 區會議', order: 4 },
-        { name: '區活動', icon: '🎉', display: '🎉 區活動', order: 5 },
-        { name: '銷售工具', icon: '💼', display: '💼 銷售工具', order: 6 },
-        { name: 'Training', icon: '🎓', display: '🎓 Training', order: 7 }
+    // 💡 定義基礎預設卡片，加入 default_ ID 以作識別
+    const baseCategories = [
+        { id: 'default_Memo', name: 'Memo', icon: '📝', order: 1 },
+        { id: 'default_新聞', name: '新聞', icon: '📰', order: 2 },
+        { id: 'default_分享', name: '分享', icon: '🗣️', order: 3 },
+        { id: 'default_區會議', name: '區會議', icon: '🗓️', order: 4 },
+        { id: 'default_區活動', name: '區活動', icon: '🎉', order: 5 },
+        { id: 'default_銷售工具', name: '銷售工具', icon: '💼', order: 6 },
+        { id: 'default_Training', name: 'Training', icon: '🎓', order: 7 }
     ];
 
     onSnapshot(doc(db, "config", "vision_mission"), (docSnap) => {
@@ -306,8 +306,31 @@
         } catch(e) { alert("儲存失敗"); }
     };
 
+    // 💡 智能合併：預設卡片與 Firestore 數據互通
     onSnapshot(collection(db, "categories"), (snapshot) => {
-        customCategories = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const dbCats = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        mergedCategories = [];
+
+        // 載入預設卡片並覆寫 DB 排序狀態
+        baseCategories.forEach(def => {
+            const dbMatch = dbCats.find(c => c.id === def.id);
+            if (dbMatch) {
+                if (!dbMatch.deleted) {
+                    mergedCategories.push({ ...def, order: dbMatch.order !== undefined ? dbMatch.order : def.order });
+                }
+            } else {
+                mergedCategories.push(def);
+            }
+        });
+
+        // 載入完全新增的自訂卡片
+        dbCats.forEach(c => {
+            if (!c.id.startsWith('default_') && !c.deleted) {
+                mergedCategories.push(c);
+            }
+        });
+
+        mergedCategories.sort((a, b) => a.order - b.order);
         renderCardList();
     });
 
@@ -321,15 +344,11 @@
     function renderCardList() {
         const listArea = document.getElementById('cardListArea');
         listArea.innerHTML = "";
-        const fullList = [...defaultCategories];
-        customCategories.forEach(c => {
-            fullList.push({ name: c.name, icon: c.icon || '📌', display: `${c.icon || '📌'} ${c.name}`, order: parseInt(c.order) || 99 });
-        });
-        fullList.sort((a, b) => a.order - b.order);
 
-        fullList.forEach(item => {
+        mergedCategories.forEach(item => {
+            const displayStr = `${item.icon} ${item.name}`;
             listArea.innerHTML += `
-                <div class="briefcase-row-card" onclick="openSection('${item.name}', '${item.display}')">
+                <div class="briefcase-row-card" onclick="openSection('${item.name}', '${displayStr}')">
                     <span class="briefcase-icon">${item.icon}</span>
                     <span class="briefcase-title">${item.name} <span id="dot-${item.name}" class="dash-badge">🔴 NEW</span></span>
                     <span class="arrow-right">›</span>
