@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terra資源系統 - 管理員後台 v3.3.0</title>
+    <title>Terra資源系統 - 管理員後台 v3.5.0</title>
     <style>
         :root { --brand-color: #0d1b2a; --bg-color: #f4f7f6; --text-main: #333; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg-color); margin: 0; padding-bottom: 40px; -webkit-user-select: none; }
@@ -60,18 +60,16 @@
     <button class="back-btn" id="backBtn" onclick="backToDashboard()">⬅️ 返回</button>
     <img src="./terra-192.png" alt="Logo">
     <span id="headerTitle">Terra管理員後台</span>
-    <span class="version-tag">v3.3.0</span>
+    <span class="version-tag">v3.5.0</span>
 </div>
 
 <div class="container">
     
-    <!-- 🎛️ 畫面一：九宮格卡片 + 次序管理 -->
     <div id="adminDashboard">
         <h3 style="color: var(--brand-color); text-align: center; margin-top: 0;">請選擇要管理的分類卡片</h3>
         
         <div class="app-grid" id="adminGridArea"></div>
 
-        <!-- 🔢 設定區：新增自訂卡片 (包含數字優先次序) -->
         <div class="admin-sub-box">
             <h4 style="margin:0 0 10px 0; color:var(--brand-color);">➕ 新增自訂卡片 (自訂排列次序)</h4>
             <div style="display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap;">
@@ -92,7 +90,8 @@
             </div>
             <button class="btn" onclick="addCustomCategory()">確認新增卡片</button>
 
-            <h5 style="margin:15px 0 5px 0; color:#555;">已建立的自訂卡片次序管理：</h5>
+            <!-- 💡 更新標題：所有卡片統一管理 -->
+            <h5 style="margin:15px 0 5px 0; color:#555;">所有卡片管理 (包含預設及自訂，支援排序與刪除)：</h5>
             <div id="customCategoryList">載入中...</div>
         </div>
         
@@ -103,7 +102,6 @@
         <a href="./index.html" class="back-link">⬅️ 返回前台主頁</a>
     </div>
 
-    <!-- 📝 畫面二：獨立分類操作區 (上載 + 刪除) -->
     <div id="categoryView" style="display: none;">
         
         <form id="uploadForm">
@@ -172,6 +170,17 @@
 </div>
 
 <script>
+    // 🔐 登入權限檢查 (密碼：leo wong)
+    if (sessionStorage.getItem('admin_auth') !== 'true') {
+        const pwd = prompt("🔑 請輸入管理員密碼：");
+        if (pwd === "leo wong") {
+            sessionStorage.setItem('admin_auth', 'true');
+        } else {
+            alert("❌ 密碼不正確！");
+            window.location.href = "./index.html";
+        }
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
         const frontendUrl = window.location.href.split('?')[0].replace('admin.html', '') + (window.location.href.includes('admin.html') ? 'index.html' : '');
         document.getElementById('qrCodeImg').src = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(frontendUrl);
@@ -180,7 +189,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, serverTimestamp, getDocs, deleteDoc, doc, updateDoc, query, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, serverTimestamp, getDocs, deleteDoc, doc, setDoc, query, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
     import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
 
     const app = initializeApp({
@@ -195,16 +204,17 @@
     const storage = getStorage(app);
     let currentActiveSection = "";
     let currentDocs = [];
-    let customCategories = [];
+    let mergedCategories = [];
 
-    const defaultCategories = [
-        { name: 'Memo', icon: '📝', display: '📝 Memo', order: 1 },
-        { name: '新聞', icon: '📰', display: '📰 新聞', order: 2 },
-        { name: '分享', icon: '🗣️', display: '🗣️ 分享', order: 3 },
-        { name: '區會議', icon: '🗓️', display: '🗓️ 區會議', order: 4 },
-        { name: '區活動', icon: '🎉', display: '🎉 區活動', order: 5 },
-        { name: '銷售工具', icon: '💼', display: '💼 銷售工具', order: 6 },
-        { name: 'Training', icon: '🎓', display: '🎓 Training', order: 7 }
+    // 💡 定義基礎預設卡片，加入 default_ ID 以作識別
+    const baseCategories = [
+        { id: 'default_Memo', name: 'Memo', icon: '📝', order: 1 },
+        { id: 'default_新聞', name: '新聞', icon: '📰', order: 2 },
+        { id: 'default_分享', name: '分享', icon: '🗣️', order: 3 },
+        { id: 'default_區會議', name: '區會議', icon: '🗓️', order: 4 },
+        { id: 'default_區活動', name: '區活動', icon: '🎉', order: 5 },
+        { id: 'default_銷售工具', name: '銷售工具', icon: '💼', order: 6 },
+        { id: 'default_Training', name: 'Training', icon: '🎓', order: 7 }
     ];
 
     const monthSelect = document.getElementById('uploadMonth');
@@ -219,8 +229,25 @@
         deleteMonthFilter.innerHTML += `<option value="${monthStr}">${monthStr}</option>`;
     }
 
+    // 💡 智能合併：預設卡片與 Firestore 數據互通
     onSnapshot(collection(db, "categories"), (snapshot) => {
-        customCategories = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        const dbCats = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        mergedCategories = [];
+
+        baseCategories.forEach(def => {
+            const dbMatch = dbCats.find(c => c.id === def.id);
+            if (dbMatch) {
+                if (!dbMatch.deleted) mergedCategories.push({ ...def, order: dbMatch.order !== undefined ? dbMatch.order : def.order });
+            } else {
+                mergedCategories.push(def);
+            }
+        });
+
+        dbCats.forEach(c => {
+            if (!c.id.startsWith('default_') && !c.deleted) mergedCategories.push(c);
+        });
+
+        mergedCategories.sort((a, b) => a.order - b.order);
         renderAdminGrid();
         renderCustomCatManageList();
     });
@@ -228,13 +255,10 @@
     function renderAdminGrid() {
         const grid = document.getElementById('adminGridArea');
         grid.innerHTML = "";
-        const full = [...defaultCategories];
-        customCategories.forEach(c => full.push({ name: c.name, icon: c.icon || '📌', display: `${c.icon || '📌'} ${c.name}`, order: parseInt(c.order) || 99 }));
-        full.sort((a, b) => a.order - b.order);
-
-        full.forEach(item => {
+        mergedCategories.forEach(item => {
+            const displayStr = `${item.icon} ${item.name}`;
             grid.innerHTML += `
-                <div class="briefcase-card" onclick="openCategoryView('${item.name}', '${item.display}')">
+                <div class="briefcase-card" onclick="openCategoryView('${item.name}', '${displayStr}')">
                     <span class="order-badge">序號: ${item.order}</span>
                     <span class="briefcase-icon">${item.icon}</span>
                     <span class="briefcase-title">${item.name}</span>
@@ -245,18 +269,18 @@
 
     function renderCustomCatManageList() {
         const container = document.getElementById('customCategoryList');
-        if (customCategories.length === 0) {
-            container.innerHTML = '<div style="font-size:12px; color:#888;">暫無自訂卡片</div>';
+        if (mergedCategories.length === 0) {
+            container.innerHTML = '<div style="font-size:12px; color:#888;">暫無卡片</div>';
             return;
         }
         container.innerHTML = "";
-        customCategories.forEach(c => {
+        mergedCategories.forEach(c => {
             container.innerHTML += `
                 <div class="custom-cat-item">
                     <span>${c.icon} ${c.name}</span>
                     <div>
                         <label style="display:inline-flex; align-items:center; gap:4px; font-size:12px; margin:0;">序號: 
-                            <input type="number" class="order-input-sm" id="ord-${c.id}" value="${c.order || 8}">
+                            <input type="number" class="order-input-sm" id="ord-${c.id}" value="${c.order}">
                         </label>
                         <button type="button" class="btn" style="padding:4px 8px; font-size:11px; width:auto; display:inline-block;" onclick="updateCategoryOrder('${c.id}')">修改</button>
                         <button type="button" class="delete-btn" onclick="deleteCustomCategory('${c.id}', '${c.name}')">刪除</button>
@@ -278,17 +302,25 @@
         } catch(e) { alert("新增卡片失敗"); }
     };
 
+    // 💡 更新順序 (使用 setDoc + merge 支援預設與自訂卡片)
     window.updateCategoryOrder = async function(id) {
-        const newOrder = parseInt(document.getElementById(`ord-${id}`).value) || 8;
+        const newOrder = parseInt(document.getElementById(`ord-${id}`).value) || 1;
         try {
-            await updateDoc(doc(db, "categories", id), { order: newOrder });
+            await setDoc(doc(db, "categories", id), { order: newOrder }, { merge: true });
             alert("✅ 卡片次序已更新！");
         } catch(e) { alert("修改排序失敗"); }
     };
 
+    // 💡 刪除卡片 (支援預設隱藏與自訂徹底刪除)
     window.deleteCustomCategory = async function(id, name) {
-        if(confirm(`⚠️ 確定要刪除自訂卡片「${name}」嗎？`)) {
-            try { await deleteDoc(doc(db, "categories", id)); } catch(e) { alert("刪除卡片失敗"); }
+        if(confirm(`⚠️ 確定要刪除卡片「${name}」嗎？刪除後前台將不會顯示。`)) {
+            try {
+                if(id.startsWith('default_')){
+                    await setDoc(doc(db, "categories", id), { deleted: true }, { merge: true });
+                } else {
+                    await deleteDoc(doc(db, "categories", id));
+                }
+            } catch(e) { alert("刪除卡片失敗"); }
         }
     };
 
