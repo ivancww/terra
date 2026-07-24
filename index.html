@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terra資源系統 v3.3.0</title>
+    <title>Terra資源系統 v3.4.0</title>
     <link rel="manifest" href="./manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -27,7 +27,6 @@
         /* 🌟 左邊：Terra 願景/使命/目標 區塊 */
         .vm-card { background: white; border-radius: 16px; padding: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.03); border-top: 5px solid var(--brand-color); position: relative; }
         .vm-title { font-size: 18px; font-weight: bold; color: var(--brand-color); margin-bottom: 15px; text-align: center; border-bottom: 1px solid #eee; padding-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        /* 💡 願景修改專屬 Logo */
         .vm-edit-logo { width: 22px; height: 22px; cursor: pointer; border-radius: 4px; transition: transform 0.2s; }
         .vm-edit-logo:active { transform: scale(0.9); }
         .vm-section { margin-bottom: 15px; }
@@ -82,7 +81,6 @@
 </head>
 <body>
 
-<!-- GAS 登入鎖 (開App時用，保留不變) -->
 <div id="loginOverlay" class="login-overlay">
     <div class="login-box">
         <img src="./terra-192.png" alt="Logo" class="login-logo">
@@ -93,7 +91,6 @@
     </div>
 </div>
 
-<!-- 願景編輯視窗 -->
 <div id="vmEditModal" class="vm-modal-overlay">
     <div class="vm-modal-box">
         <h3>🌍 修改核心方向</h3>
@@ -107,19 +104,16 @@
 
 <div class="header">
     <button class="back-btn" id="backBtn" onclick="backToDashboard()">⬅️ 主頁</button>
-    <!-- 💡 點擊直入後台，恢復無密碼設定 -->
     <img src="./terra-192.png" alt="Logo" onclick="goToAdmin()">
     <span id="headerTitle">Terra資源系統</span>
-    <span class="version-tag">v3.3.0</span>
+    <span class="version-tag">v3.4.0</span>
 </div>
 
 <div class="container">
     
     <div id="dashboardView" class="main-split-container">
         
-        <!-- 左欄：願景 / 使命 / 目標 -->
         <div class="vm-card">
-            <!-- 💡 在這裡加入 Terra Logo，點擊會要求 leo wong 密碼 -->
             <div class="vm-title">
                 🌍 Terra 團隊核心方向 
                 <img src="./terra-192.png" alt="Edit" class="vm-edit-logo" onclick="openVisionEditor()">
@@ -138,12 +132,10 @@
             </div>
         </div>
 
-        <!-- 右欄：垂直單欄卡片列表 -->
         <div class="app-vertical-list" id="cardListArea"></div>
 
     </div>
 
-    <!-- 📄 分類內頁檢視 -->
     <div id="pageView" class="page-view">
         <div class="page-title" id="pageTitleDisplay">分類名稱</div>
         <div class="filter-section" id="filterArea">
@@ -166,7 +158,7 @@
 
         <div id="staticTools" style="display: none;" class="tools-list">
             <a href="https://ivancww.github.io/DA" target="_blank" class="tool-item">
-                <img src="./icon-192.png" class="tool-logo" onerror="this.src='./terra-192.png'">
+                <img src="https://ivancww.github.io/DA/icon-512.png" class="tool-logo" onerror="this.onerror=null; this.src='https://ivancww.github.io/DA/icon-192.png'; this.onerror=function(){this.src='./terra-192.png';}">
                 <div class="tool-info"><p class="tool-name">DA 系統</p><p class="tool-desc">DA 專屬應用試算工具</p></div>
                 <span class="tool-arrow">›</span>
             </a>
@@ -245,12 +237,10 @@
 
     checkLoginStatus();
 
-    // 💡 恢復：點擊頂部 Logo 直接進入後台
     function goToAdmin() {
         window.location.href = "./admin.html";
     }
 
-    // 💡 關閉願景編輯器
     function closeVisionEditor() {
         document.getElementById('vmEditModal').style.display = 'none';
     }
@@ -284,7 +274,6 @@
         { name: 'Training', icon: '🎓', display: '🎓 Training', order: 7 }
     ];
 
-    // 1. 實時監聽願景，並儲存到變數供修改用
     onSnapshot(doc(db, "config", "vision_mission"), (docSnap) => {
         if (docSnap.exists()) {
             currentVMData = docSnap.data();
@@ -294,7 +283,6 @@
         }
     });
 
-    // 💡 點擊前台 Terra Logo 打開編輯器並驗證密碼
     window.openVisionEditor = function() {
         const pwd = prompt("🔑 請輸入修改願景密碼：");
         if (pwd === "leo wong") {
@@ -307,7 +295,6 @@
         }
     };
 
-    // 💡 儲存願景到 Firebase
     window.submitVisionMission = async function() {
         const vision = document.getElementById('vmVisionInput').value.trim();
         const mission = document.getElementById('vmMissionInput').value.trim();
@@ -319,13 +306,11 @@
         } catch(e) { alert("儲存失敗"); }
     };
 
-    // 2. 實時監聽自訂卡片
     onSnapshot(collection(db, "categories"), (snapshot) => {
         customCategories = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderCardList();
     });
 
-    // 3. 實時監聽 資源數據
     onSnapshot(query(collection(db, "data"), orderBy("createdAt", "desc")), (snapshot) => {
         allDocs = snapshot.docs.map(doc => doc.data());
         updateMonthFilterOptions();
